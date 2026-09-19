@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String          @id @default(cuid())
+  username       String
+  email          String          @unique
+  password       String
+  role           Role            @default(USER)
+  createdAt      DateTime        @default(now())
+
+
+  logouts        Logout[]
+  projects       Project[]
+  projectmembers ProjectMember[]
+  assignedTask   Task[]          @relation("AssignedTask")
+  createdTask    Task[]          @relation("CreatedTask")
+}
+
+model Logout {
+  id          String   @id @default(cuid())
+  userId      String
+  refreshHash String
+  ip          String
+  userAgent   String
+  revoke      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Project {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  startDate      DateTime
+  deadline       DateTime?
+  createdAt      DateTime        @default(now())
+  adminId        String
+  status         ProjectStatus   @default(PENDING)
+  completedAt    DateTime?
+  admin          User            @relation(fields: [adminId], references: [id])
+  projectmembers ProjectMember[]
+  tasks          Task[]
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  priority     Priority   @default(MEDIUM)
+  status       TaskStatus @default(TODO)
+  dueDate      DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  createdById  String
+  assignedToId String?
+  projectId    String
+  completedAt  DateTime?
+  assignedTo   User?      @relation("AssignedTask", fields: [assignedToId], references: [id])
+  createdBy    User       @relation("CreatedTask", fields: [createdById], references: [id])
+  project      Project    @relation(fields: [projectId], references: [id])
+
+  @@unique([projectId, name])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProjectStatus {
+  PENDING
+  ACTIVE
+  COMPLETE
+  CANCELLED
+}
+
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
