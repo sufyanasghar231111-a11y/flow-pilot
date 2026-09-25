@@ -97,23 +97,45 @@ export const projectService = {
         id: string,
         name: string,
         description: string,
-        deadline: Date,
+        deadline: Date | undefined,
+        startDate: Date | undefined,
+        status: ProjectStatus,
         request: NextRequest
     ) {
 
         const admin = await getAuthUser(request)
 
-        const updateProject = await prisma.project.update(
+        const existing = await prisma.project.findFirst(
             {
                 where: {
                     id: id,
                     adminId: admin.userId
+                }
+            }
+        )
+
+        if (!existing) {
+            return Response.json(
+                {
+                    message: "Project is not found"
+                },
+                {
+                    status: 404
+                }
+            )
+        }
+
+        const updateProject = await prisma.project.update(
+            {
+                where: {
+                    id: id
                 },
                 data: {
-                    name,
-                    description,
-                    deadline
-
+                    ...(name !== undefined && { name }),
+                    ...(description !== undefined && { description }),
+                    ...(deadline !== undefined && { deadline }),
+                    ...(startDate !== undefined && { startDate }),
+                    ...(status !== undefined && { status }),
                 }
             }
         )
@@ -272,6 +294,10 @@ export const projectService = {
                 select: {
                     id: true,
                     name: true,
+                    description: true,
+                    startDate: true,
+                    deadline: true,
+                    status: true,
                     projectmembers: {
                         select: {
                             user: {

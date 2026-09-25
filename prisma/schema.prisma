@@ -54,7 +54,7 @@ model ProjectMember {
   userId    String
   projectId String
   createdAt DateTime @default(now())
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, projectId])
@@ -75,7 +75,7 @@ model Task {
   completedAt  DateTime?
   assignedTo   User?      @relation("AssignedTask", fields: [assignedToId], references: [id])
   createdBy    User       @relation("CreatedTask", fields: [createdById], references: [id])
-  project      Project    @relation(fields: [projectId], references: [id])
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, name])
 }
@@ -101,5 +101,6 @@ enum Priority {
 enum TaskStatus {
   TODO
   IN_PROGRESS
+  REVIEW
   DONE
 }

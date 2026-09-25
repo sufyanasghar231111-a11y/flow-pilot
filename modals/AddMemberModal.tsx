@@ -4,12 +4,19 @@ import { useProjectUi1 } from "@/contexts/projectContext/ProjectContext"
 import { useMember } from "@/contexts/memberContext/MemberContext"
 import { Names } from "@/components/nameComponent/Names"
 import { useProject } from "@/hooks/useProject"
+import { userType } from "@/types/usertype"
+import UserPagination from "@/components/usercomponent/userPagination"
+import { useState } from "react"
 
 export default function AddMemberModal() {
     const { addMemberModal, setAddMemberModal } = useProjectUi1()
-    const { allUser, AddMember, removeMember } = useMember()
+    const { allUser, AddMember, removeMember, } = useMember()
     const { singleProjectData } = useProject()
-
+    const [searchData, setSearchData] = useState('')
+    const search = searchData.trim().toLowerCase()
+    const filterData = allUser.filter(elem  => elem.username.toLowerCase().includes(search) ||
+        elem.email.toLowerCase().includes(search)
+    )
 
     return (
         <div>
@@ -54,6 +61,8 @@ export default function AddMemberModal() {
 
                         <div className="px-6 pt-4 pb-3">
                             <input
+                                onChange={(elem) => { setSearchData(elem.target.value) }}
+                                value={searchData}
                                 placeholder="Search by name or email"
                                 className="w-full bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 text-sm text-gray-200 placeholder:text-gray-500 outline-none focus:border-[#6C8EF5]/50"
                             />
@@ -61,21 +70,21 @@ export default function AddMemberModal() {
 
                         <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-0.5">
 
-                            {allUser.map((user) => {
+                            {filterData.map((user: userType) => {
                                 const find = singleProjectData?.projectmembers.some(
-                                    elem => elem.user.id === user.id
+                                    (elem: { user: { id: string } }) => elem.user.id === user.id
                                 )
                                 return (
                                     <div key={user.id}>
                                         <button
                                             onClick={() =>
                                                 find
-                                                    ? removeMember(singleProjectData.id, user.id)
-                                                    : AddMember(singleProjectData.id, user.id)
+                                                    ? removeMember(singleProjectData?.id, user.id)
+                                                    : AddMember(singleProjectData?.id, user.id)
                                             }
                                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${find
-                                                    ? "bg-blue-800/60 border border-blue-400/60"
-                                                    : "border border-transparent hover:bg-white/[0.04]"
+                                                ? "bg-blue-800/60 border border-blue-400/60"
+                                                : "border border-transparent hover:bg-white/[0.04]"
                                                 }`}
                                         >
                                             <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-medium bg-blue-800/80 text-white shrink-0">
@@ -106,35 +115,7 @@ export default function AddMemberModal() {
 
                         </div>
 
-                        <div className="flex items-center justify-between px-6 py-3 border-t border-white/[0.06]">
-                            <button className="text-xs text-gray-500 opacity-40">
-                                Prev
-                            </button>
-
-                            <div className="flex items-center gap-1">
-                                <button className="w-6 h-6 rounded-md text-xs font-medium bg-[#6C8EF5] text-white">
-                                    1
-                                </button>
-
-                                <button className="w-6 h-6 rounded-md text-xs text-gray-400">
-                                    2
-                                </button>
-
-                                <button className="w-6 h-6 rounded-md text-xs text-gray-400">
-                                    3
-                                </button>
-
-                                <span className="px-1 text-xs text-gray-600">
-                                    …
-                                </span>
-                            </div>
-
-                            <button className="text-xs text-gray-400">
-                                Next
-                            </button>
-                        </div>
-
-
+                        <UserPagination />
 
                     </div>
                 </>

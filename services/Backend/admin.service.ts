@@ -1,15 +1,20 @@
 import prisma from "@/libs/db";
+import { NextRequest } from "next/server";
 
 
 export class AdminService {
 
-    static async getAllUser() {
+    static async getAllUser(request: NextRequest) {
 
+        const { searchParams } = new URL(request.url)
+        const page = Number(searchParams.get('page')) || 1
+        const limit = 8
+        const skip = (page - 1) * limit
 
         const users = await prisma.user.findMany(
             {
                 where: {
-                    role:'USER'
+                    role: 'USER'
                 },
                 select: {
                     id: true,
@@ -17,7 +22,9 @@ export class AdminService {
                     email: true,
                     role: true,
 
-                }
+                },
+                skip,
+                take: limit
             }
         )
 

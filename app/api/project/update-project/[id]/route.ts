@@ -16,17 +16,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             id,
             body.name,
             body.description,
-            new Date(body.deadline),
+            body.deadline ? new Date(body.deadline) : undefined,
+            body.startDate ? new Date(body.startDate) : undefined,
+            body.status,
             request
         )
 
         return Response.json(
             {
-                message:"Successful update",
+                message: "Successful update",
                 updateProject
             },
             {
-                status:201
+                status: 201
             }
         )
     }
@@ -39,7 +41,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             ,
             {
                 status: message === 'forbidden' ? 403 :
-                    message === 'Unauthorized' || message === 'Invalid access token' ? 403 : 500
+                    message === 'Unauthorized' || message === 'Invalid access token' ? 401 : 500
             }
         )
     }

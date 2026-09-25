@@ -19,6 +19,11 @@ export type ProjectStatType = {
     deadline: string;
 }
 
+export type UpdatePropType = {
+    id?:string,
+     name: string; description: string; deadline: string; startDate: string; status: string
+}
+
 export type ProjectType = {
     projectStats: ProjectStatsType;
     getProject: [];
@@ -27,6 +32,6 @@ export type ProjectType = {
     setProject: React.Dispatch<React.SetStateAction<ProjectStatType>>;
     ProjectCreation: (e: { preventDefault: () => void; }) => void;
     getAllProject: () => void;
-    singleProjectData: null;
-     getSingleProject:(id: string) => void;
+    singleProjectData: UpdatePropType | null;
+    getSingleProject: (id: string) => void;
 }

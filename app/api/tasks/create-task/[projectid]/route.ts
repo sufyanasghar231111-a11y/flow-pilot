@@ -18,6 +18,8 @@ export async function POST(request: NextRequest,
             body.name,
             body.description,
             body.priority,
+            new Date(body.dueDate),
+            body.assignedToId,
             request
         )
 
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest,
             ,
             {
                 status: message === 'forbidden' ? 403 :
-                    message === 'Unauthorized' || message === 'Invalid access token' ? 403 : 500
+                    message === 'Unauthorized' || message === 'Invalid access token' ? 401 : 500
             }
         )
     }

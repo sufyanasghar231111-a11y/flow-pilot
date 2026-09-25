@@ -9,6 +9,7 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { useLogin } from "../authContext/AuthContext";
 import { userType } from "@/types/usertype";
 import { useProjectUi1 } from "../projectContext/ProjectContext";
+import { useSearchParams } from "next/navigation";
 
 
 
@@ -16,6 +17,8 @@ type ProjectMember = {
     AddMember: (projectId: string, userId: string) => void;
     allUser: userType | [];
     removeMember: (projectId: string, userId: string) => void;
+    userPage: number;
+    setUserPage: React.Dispatch<React.SetStateAction<number>>
 }
 
 
@@ -27,8 +30,10 @@ export default function MemberContext({ children }: { children: ReactNode }) {
     const [allUser, setAllUser] = useState<userType | []>([])
     const { authReady } = useLogin()
     const { setAddMemberModal } = useProjectUi1()
+    const [userPage, setUserPage] = useState(1)
+
     async function GetAllUser() {
-        const [res, error] = await tryCatch(AllUser())
+        const [res, error] = await tryCatch(AllUser(userPage))
 
         if (error) {
             console.log(error);
@@ -41,7 +46,7 @@ export default function MemberContext({ children }: { children: ReactNode }) {
         if (!authReady) return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         GetAllUser()
-    }, [authReady])
+    }, [authReady, userPage])
 
     async function AddMember(projectId: string, userId: string) {
         setAddMemberModal(false)
@@ -52,8 +57,6 @@ export default function MemberContext({ children }: { children: ReactNode }) {
             console.log(error)
             return
         }
-
-        console.log(res?.data)
 
         await getAllProject()
 
@@ -71,7 +74,7 @@ export default function MemberContext({ children }: { children: ReactNode }) {
     }
 
     return (
-        <memberProvider.Provider value={{ AddMember, allUser, removeMember }}>
+        <memberProvider.Provider value={{ AddMember, allUser, removeMember, setUserPage, userPage }}>
             {children}
         </memberProvider.Provider>
     )

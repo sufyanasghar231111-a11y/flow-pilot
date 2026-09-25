@@ -5,9 +5,27 @@ import { NextRequest } from "next/server";
 
 
 export class taskService {
-    static async createTask(projectid: string, name: string, description: string, priority: Priority, request: NextRequest) {
+
+    static async createTask(projectid: string, name: string, description: string, priority: Priority, dueDate: Date, assignedToId: string, request: NextRequest) {
 
         const createdBy = await getAuthUser(request)
+
+        const projectMember = await prisma.project.findFirst(
+            {
+                where: {
+                    id: projectid,
+                    projectmembers: {
+                        some: {
+                            userId: assignedToId
+                        }
+                    }
+                }
+            }
+        )
+
+        if (!projectMember) {
+            throw new Error('User is not project member')
+        }
 
         const createTask = await prisma.task.create(
             {
@@ -16,6 +34,8 @@ export class taskService {
                     name,
                     description,
                     priority,
+                    dueDate,
+                    assignedToId,
                     createdById: createdBy.userId
                 }
             }
@@ -30,7 +50,20 @@ export class taskService {
         const getTasks = await prisma.task.findMany(
             {
                 where: {
-                    createdById: createdBy.userId
+                    createdById: createdBy.userId,
+                },
+                include: {
+                    assignedTo: {
+                        select: {
+                            id: true,
+                            username: true,
+                            email: true
+                        }
+                    }
+                },
+
+                orderBy: {
+                    createdAt: 'desc'
                 }
             }
         )
@@ -220,5 +253,70 @@ export class taskService {
 
         return [completedTask, pendingTask, activeTask, newCompleted, newPending]
     }
+
+    static async updateTaskByStatus(taskid: string, status: TaskStatus, request: NextRequest) {
+        const admin = await getAuthUser(request)
+
+        const taskId = await prisma.task.findUnique(
+            {
+                where: {
+                    id: taskid,
+                    createdById: admin.userId,
+                    status: 'REVIEW'
+                }
+            }
+        )
+
+        if (!taskId) {
+            throw new Error("Task Not Found")
+        }
+
+        if (status !== 'DONE') {
+            throw new Error("Task can only be marked as COMPLETE");
+        }
+
+        const taskStatusUpdate = await prisma.task.update(
+            {
+                where: {
+                    createdById: admin.userId,
+                    id: taskid,
+                    status: 'REVIEW',
+                    completedAt: null
+                },
+                data: {
+                    status,
+                    completedAt: new Date()
+                }
+            }
+        )
+        return taskStatusUpdate
+    }
+
+    static async deleteTask(taskid: string, request: NextRequest) {
+        const admin = await getAuthUser(request)
+        const find = await prisma.task.findUnique(
+            {
+                where:{
+                    id:taskid,
+                    createdById:admin.userId
+                }
+            }
+        )
+        if(!find){
+            throw new Error("Task not found")
+        }
+
+        const deleteTask = await prisma.task.delete(
+            {
+                where:{
+                    id:taskid,
+                    createdById:admin.userId
+                }
+            }
+        )
+        return deleteTask
+    }
+
+    
 
 }

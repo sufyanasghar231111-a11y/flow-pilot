@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             ,
             {
                 status: message === 'forbidden' ? 403 :
-                    message === 'Unauthorized' || message === 'Invalid access token' ? 403 : 500
+                    message === 'Unauthorized' || message === 'Invalid access token' ? 401 : 500
             }
         )
     }

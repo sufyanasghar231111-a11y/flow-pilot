@@ -1,3 +1,4 @@
+"use client"
 import { useAuth } from "@/contexts/authContext/AuthContext";
 import { RiMessage2Line, RiNotification2Line, RiSearch2Line } from "@remixicon/react";
 
