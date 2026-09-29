@@ -9,6 +9,7 @@ import {
     RiSearchLine,
     RiTaskLine,
 } from "@remixicon/react"
+import { useState } from "react"
 
 
 export default function ProjectSelectionModal() {
@@ -19,6 +20,8 @@ export default function ProjectSelectionModal() {
     } = useTaskUi1()
 
     const { getProject, getSingleProject } = useProject()
+    const [searchInput, setSearchInput] = useState('')
+    const filterData = getProject.filter(elem => elem.name.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))
 
     return (
         <>
@@ -57,6 +60,8 @@ export default function ProjectSelectionModal() {
                             />
 
                             <input
+                                onChange={(elem) => { setSearchInput(elem.target.value) }}
+                                value={searchInput}
                                 type="text"
                                 placeholder="Search projects..."
                                 className="h-9 w-full rounded-md border border-white/10 bg-white/3 pl-9 pr-3 text-xs text-gray-200 outline-none placeholder:text-gray-600 focus:border-blue-500/40"
@@ -65,44 +70,49 @@ export default function ProjectSelectionModal() {
 
                         <div className="mt-4 max-h-88 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                             {
-                                getProject?.map((elem: UpdatePropType) => {
-                                    return <button onClick={() => {
-                                        getSingleProject(elem?.id)
-                                        setTaskCreationModal(true)
+                                filterData.length > 0 ? (
+                                    filterData?.map((elem: UpdatePropType) => {
+                                        return <button onClick={() => {
+                                            getSingleProject(elem?.id)
+                                            setTaskCreationModal(true)
 
-                                    }} key={elem?.id} className="w-full rounded-md border border-white/10 bg-white/2.5 px-3 py-2.5 text-left transition hover:border-blue-500/30 hover:bg-blue-500/5">
-                                        <div className="flex items-center justify-between gap-3">
+                                        }} key={elem?.id} className="w-full rounded-md border border-white/10 bg-white/2.5 px-3 py-2.5 text-left transition hover:border-blue-500/30 hover:bg-blue-500/5">
+                                            <div className="flex items-center justify-between gap-3">
 
-                                            <span className="truncate text-sm font-medium text-gray-200">
-                                                {elem.name}
-                                            </span>
+                                                <span className="truncate text-sm font-medium text-gray-200">
+                                                    {elem.name}
+                                                </span>
 
-                                            <span className={`shrink-0 rounded-full border  px-2 py-0.5 text-[10px] ${elem.status === "PENDING" && 'text-amber-300 border-amber-400/20 bg-amber-400/10'}
+                                                <span className={`shrink-0 rounded-full border  px-2 py-0.5 text-[10px] ${elem.status === "PENDING" && 'text-amber-300 border-amber-400/20 bg-amber-400/10'}
                                     ${elem.status === "COMPLETE" && 'text-green-300 border-green-400/20 bg-green-400/10'}
                                     ${elem.status === "ACTIVE" && 'text-blue-300 border-blue-400/20 bg-blue-400/10'}
                                     ${elem.status === "ACTIVE" && 'text-red-300 border-red-400/20 bg-red-400/10'}
                                     `}>
-                                                {elem.status}
-                                            </span>
+                                                    {elem.status}
+                                                </span>
 
-                                        </div>
+                                            </div>
 
-                                        <div className="mt-1.5 flex items-center justify-between">
+                                            <div className="mt-1.5 flex items-center justify-between">
 
-                                            <p className="truncate text-[11px] text-gray-500">
-                                                {elem.description}
-                                            </p>
+                                                <p className="truncate text-[11px] text-gray-500">
+                                                    {elem.description}
+                                                </p>
 
-                                            <span className="ml-3 flex shrink-0 items-center gap-1 text-[10px] text-gray-500">
-                                                <RiTaskLine size={13} />
-                                                {elem.tasks.length}
-                                            </span>
+                                                <span className="ml-3 flex shrink-0 items-center gap-1 text-[10px] text-gray-500">
+                                                    <RiTaskLine size={13} />
+                                                    {elem.tasks.length}
+                                                </span>
 
-                                        </div>
-                                    </button>
-                                })
+                                            </div>
+                                        </button>
+                                    })
+                                ) : (
+                                    <div className="flex items-center justify-center">
+                                        <h1>No project found with name &quot;{searchInput}&quot;</h1>
+                                    </div>
+                                )
                             }
-
 
                         </div>
 

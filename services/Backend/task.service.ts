@@ -296,27 +296,137 @@ export class taskService {
         const admin = await getAuthUser(request)
         const find = await prisma.task.findUnique(
             {
-                where:{
-                    id:taskid,
-                    createdById:admin.userId
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
                 }
             }
         )
-        if(!find){
+        if (!find) {
             throw new Error("Task not found")
         }
 
         const deleteTask = await prisma.task.delete(
             {
-                where:{
-                    id:taskid,
-                    createdById:admin.userId
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
                 }
             }
         )
         return deleteTask
     }
 
-    
+    static async getsingleTask(taskid: string, request: NextRequest) {
+        const admin = await getAuthUser(request)
+
+        const find = await prisma.task.findUnique(
+            {
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
+                },
+
+            }
+        )
+        if (!find) {
+            throw new Error("Task not found")
+        }
+
+        const task = await prisma.task.findUnique(
+            {
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    description: true,
+                    status: true,
+                    priority: true,
+                    dueDate: true,
+                    assignedTo: {
+                        select: {
+                            username: true,
+                            id: true
+                        }
+                    },
+                    project: {
+                        select: {
+                            projectmembers: {
+                                select: {
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            username: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        )
+
+        return task
+    }
+
+    static async updateTask(taskid: string, name: string, description: string, priority: Priority, dueDate: Date | undefined, assignedToId: string, request: NextRequest) {
+        const admin = await getAuthUser(request)
+
+
+        const find = await prisma.task.findUnique(
+            {
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
+                }
+            }
+        )
+        if (!find) {
+            throw new Error("Task not found")
+        }
+
+        const findMember = await prisma.project.findFirst(
+            {
+                where: {
+                    tasks: {
+                        some: {
+                            id: taskid
+                        }
+                    },
+                    projectmembers: {
+                        some: {
+                            userId: assignedToId
+                        }
+                    },
+                }
+            }
+        )
+
+        if (!findMember) {
+            throw new Error("User is not project Member")
+        }
+
+        const updateTask = await prisma.task.update(
+            {
+                where: {
+                    id: taskid,
+                    createdById: admin.userId
+                },
+                data: {
+                    ...(name !== undefined && { name }),
+                    ...(description !== undefined && { description }),
+                    ...(priority !== undefined && { priority }),
+                    ...(dueDate !== undefined && { dueDate }),
+                    ...(assignedToId !== undefined && { assignedToId }),
+                }
+            }
+        )
+        return updateTask
+    }
 
 }

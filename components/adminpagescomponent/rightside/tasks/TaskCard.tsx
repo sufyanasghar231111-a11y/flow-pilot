@@ -30,9 +30,6 @@ export default function TaskCard({ elem }) {
         setTaskDetailModal(prev => prev === id ? null : id)
     }
 
-    console.log(elem.completedAt);
-
-
     return (
 
         <div ref={setNodeRef} style={style} {...(canDrag ? listeners : {})} {...attributes} key={elem.id} className={`border shrink-0 border-gray-800 rounded-md px-2 py-3 bg-[#1B1E2B] hover:border-gray-700 hover:bg-[#1D2130] ${canDrag ? 'cursor-grab active:cursor-grabbing ' : 'opacity-70 cursor-not-allowed'}  ${isDragging ? 'opacity-0' : ''}  transition-all  duration-200 `}>

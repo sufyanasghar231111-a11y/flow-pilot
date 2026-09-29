@@ -45,9 +45,9 @@ export default function TaskColumn({ id, title, getTask }: GetTaskType) {
                 {
                     filterTask.length > 0 ? (
                         filterTask?.map((elem) => (
-                            <>
-                                <TaskCard key={elem.id} elem={elem} />
-                            </>
+                            <div key={elem.id} >
+                                <TaskCard elem={elem} />
+                            </div>
                         ))
                     ) : (
                         <NoTaskFound id={id} />

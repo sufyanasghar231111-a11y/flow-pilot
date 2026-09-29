@@ -23,13 +23,11 @@ export function FilterDataModel() {
         <>
             {filterModal && (
                 <>
-                    {/* Overlay */}
                     <div
                         onClick={() => setFilterModal(false)}
                         className="fixed inset-0 z-40"
                     />
 
-                    {/* Modal */}
                     <div className="absolute top-12 right-40 z-50 w-56 rounded-lg border border-gray-700 bg-[#171A26] p-4 shadow-lg">
                         <div className="mb-3 flex items-center justify-between">
                             <span className="text-sm font-semibold text-gray-100">
@@ -78,7 +76,6 @@ export function FilterDataModel() {
                             </button>
                         </div>
 
-                        {/* Clear */}
                         <div className="mt-3 border-t border-gray-700 pt-2">
                             <button
                                 onClick={handleClearFilter}

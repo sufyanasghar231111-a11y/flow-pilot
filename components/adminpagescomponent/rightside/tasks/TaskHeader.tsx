@@ -22,11 +22,11 @@ export default function TaskHeader() {
                         <span className="text-xs font-medium">Filter</span>
                         <RiArrowDownSLine className={`h-4 w-4  transition-all duration-300`} />
                     </button>
-
+{/* 
                     <button className="flex items-center gap-1.5 rounded-md border border-[#30374a] bg-[#171A26] px-2 py-2 text-gray-300 transition-all duration-200 cursor-pointer hover:border-[#4b5878] hover:bg-[#1d2130] hover:text-white active:scale-[0.98]">
                         <RiSortAsc className="h-4 w-4" />
                         <span className="text-xs font-medium">Sort</span>
-                    </button>
+                    </button> */}
                     <TaskCreationButton />
                 </div>
             </div>

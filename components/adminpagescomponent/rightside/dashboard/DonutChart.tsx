@@ -59,8 +59,6 @@ export default function DonutChart() {
                                 nameKey="label"
                                 innerRadius="65%"
                                 outerRadius="88%"
-                                paddingAngle={3}
-                                cornerRadius={8}
                                 startAngle={90}
                                 endAngle={-270}
                             >

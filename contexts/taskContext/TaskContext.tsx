@@ -1,5 +1,5 @@
 "use client"
-import { countApi, getAllTaskApi, taskCreationApi, updateTaskApi } from "@/services/Frontend/taskApi";
+import { countApi, deleteTaskApi, getAllTaskApi, singleTaskApi, taskCreationApi, updateSingleTaskApi, updateTaskApi } from "@/services/Frontend/taskApi";
 import { tryCatch } from "@/utils/tryCatch";
 import React, { createContext, useState, ReactNode, useEffect, useContext } from "react";
 import { useLogin } from "../authContext/AuthContext";
@@ -34,10 +34,16 @@ type TaskContextype = {
     taskStats: TaskStatsType;
     taskCreation: (projectId: string) => void;
     task: TaskState;
+    taskUpdate: TaskState;
     handleTaskChange: (e: { target: { name: string; value: string; }; }) => void;
+    handleTaskUpdateChange: (e: { target: { name: string; value: string; }; }) => void;
     getTask: TaskState[];
     updateTaskByStatus: (projectid: string, status: string) => void;
     setGetTask: React.Dispatch<React.SetStateAction<TaskState[]>>;
+    singleTaskData: TaskState | null
+    singleTaskById: (taskid: string) => void;
+    deleteTask: (taskid: string) => void;
+    updateTask: (taskid: string) => void;
 }
 
 
@@ -52,8 +58,12 @@ type TaskUiContextType1 = {
 }
 
 type TaskUiContextType2 = {
-    taskDetailModal: null | string;
-    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | string>>
+    taskDetailModal: null | boolean;
+    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | boolean>>
+    taskDeletionModal: boolean;
+    setTaskDeletionModal: React.Dispatch<React.SetStateAction<boolean>>
+    taskUpdateModal: boolean;
+    setTaskUpdateModal: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const taskContext = createContext<TaskContextype | null>(null)
@@ -80,12 +90,23 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         assignedToId: ""
     })
 
+    const [taskUpdate, setTaskUpdate] = useState({
+        name: '',
+        description: "",
+        priority: "",
+        dueDate: "",
+        assignedToId: ""
+    })
+
     const [projectSelectionModal, setProjectSelectionModal] = useState<boolean>(false)
     const [taskCreationModal, setTaskCreationModal] = useState<boolean>(false)
     const { getAllProject } = useProject()
     const [getTask, setGetTask] = useState<TaskState[]>([])
     const [warningModal, setWarningModal] = useState(false)
-    const [taskDetailModal, setTaskDetailModal] = useState<null | string>(null)
+    const [taskDetailModal, setTaskDetailModal] = useState<null | boolean>(null)
+    const [taskDeletionModal, setTaskDeletionModal] = useState<boolean>(false)
+    const [singleTaskData, setSingleTaskData] = useState<TaskState | null>(null)
+    const [taskUpdateModal, setTaskUpdateModal] = useState<boolean>(false)
 
     async function countTaskStats() {
         const [res, error] = await tryCatch(countApi())
@@ -119,6 +140,15 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         )
     }
 
+    function handleTaskUpdateChange(e: { target: { name: string; value: string; }; }) {
+        setTaskUpdate(
+            prev => ({
+                ...prev,
+                [e.target.name]: e.target.value
+            })
+        )
+    }
+
     async function getAllTask() {
         const [res, error] = await tryCatch(getAllTaskApi())
 
@@ -131,6 +161,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         if (!authReady) return
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllTask()
 
     }, [authReady])
@@ -170,11 +201,72 @@ export default function TaskContext({ children }: { children: ReactNode }) {
 
     }
 
+    async function singleTaskById(taskid: string) {
+        if (!taskid) return
+        const [res, error] = await tryCatch(singleTaskApi(taskid))
+        if (error) {
+            console.log(error);
+            return
+        }
+        setSingleTaskData(res?.data.task)
+    }
+
+    useEffect(() => {
+        if (!authReady) return
+
+        singleTaskById()
+    }, [authReady])
+
+    async function deleteTask(taskid: string) {
+        const [res, error] = await tryCatch(deleteTaskApi(taskid))
+        if (error) {
+            console.log(error);
+            return
+        }
+
+        await getAllTask()
+        setTaskDeletionModal(false)
+    }
+
+    async function updateTask(taskid: string) {
+        const [res, error] = await tryCatch(updateSingleTaskApi(taskid,
+            {
+                name: taskUpdate.name,
+                description: taskUpdate.description,
+                priority: taskUpdate.priority,
+                dueDate: taskUpdate.dueDate,
+                assignedToId: taskUpdate.assignedToId
+            }
+        ))
+        if (error) {
+            console.log(error);
+            return
+        }
+
+        await getAllTask()
+        setTaskUpdateModal(false)
+    }
+
+    useEffect(() => {
+        if (!singleTaskData) return
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTaskUpdate(
+            {
+                name: singleTaskData?.name ?? "",
+                description: singleTaskData?.description ?? "",
+                priority: singleTaskData?.priority ?? "",
+                dueDate: singleTaskData?.dueDate ? singleTaskData?.dueDate.split("T")[0] : "",
+                assignedToId: singleTaskData?.assignedTo?.id ?? ""
+            }
+        )
+
+    }, [singleTaskData])
 
     return (
-        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask }}>
+        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange }}>
             <taskUiContext1.Provider value={{ projectSelectionModal, setProjectSelectionModal, taskCreationModal, setTaskCreationModal, warningModal, setWarningModal }}>
-                <taskUiContext2.Provider value={{ taskDetailModal, setTaskDetailModal }}>
+                <taskUiContext2.Provider value={{ taskDetailModal, setTaskDetailModal, taskDeletionModal, setTaskDeletionModal, taskUpdateModal, setTaskUpdateModal }}>
                     {children}
                 </taskUiContext2.Provider>
             </taskUiContext1.Provider>

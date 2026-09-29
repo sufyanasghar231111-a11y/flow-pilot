@@ -6,6 +6,7 @@ import ProjectContext from "@/contexts/projectContext/ProjectContext";
 import UserContext from "@/contexts/userContext";
 import TaskContext from "@/contexts/taskContext/TaskContext";
 import MemberContext from "@/contexts/memberContext/MemberContext";
+import EventContext from "@/contexts/eventcontext/EventContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,9 +35,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <UserContext>
               <TaskContext>
                 <MemberContext>
-                  <div>
-                    {children}
-                  </div>
+                  <EventContext>
+                    <div>
+                      {children}
+                    </div>
+                  </EventContext>
                 </MemberContext>
               </TaskContext>
             </UserContext>

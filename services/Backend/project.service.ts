@@ -125,6 +125,18 @@ export const projectService = {
             )
         }
 
+        await prisma.project.update(
+            {
+                where: {
+                    id: id,
+                },
+                data: {
+                    status: status,
+                    completedAt: status === 'COMPLETE' ? new Date() : null
+                }
+            }
+        )
+
         const updateProject = await prisma.project.update(
             {
                 where: {

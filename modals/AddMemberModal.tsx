@@ -17,7 +17,7 @@ export default function AddMemberModal() {
     const filterData = allUser.filter(elem  => elem.username.toLowerCase().includes(search) ||
         elem.email.toLowerCase().includes(search)
     )
-
+    
     return (
         <div>
             {addMemberModal && (

@@ -139,6 +139,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         }
 
         setGetProject(res?.data.findProject)
+        
     }
 
     useEffect(() => {

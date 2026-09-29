@@ -16,3 +16,15 @@ export const getAllTaskApi = () => {
 export const updateTaskApi = (projectid: string, data: { status: string | null }) => {
     return api.patch(`/tasks/update-task-status/${projectid}`, data)
 }
+
+export const deleteTaskApi = (taskid: string) => {
+    return api.delete(`/tasks/delete-task/${taskid}`)
+}
+
+export const singleTaskApi = (taskid: string) => {
+    return api.get(`/tasks/get-single-task/${taskid}`)
+}
+
+export const updateSingleTaskApi = (taskid: string, data:TaskState) => {
+    return api.patch(`/tasks/update-task-id/${taskid}`, data)
+}
