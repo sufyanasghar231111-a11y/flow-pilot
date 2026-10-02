@@ -5,11 +5,12 @@ import { CSS } from '@dnd-kit/utilities'
 import { useDraggable } from "@dnd-kit/core";
 import TaskDetail from "@/modals/TaskDetail";
 import { useTaskUi2 } from "@/contexts/taskContext/TaskContext";
-import { useTask } from "@/hooks/useTask";
+import { Task } from "@/app/generated/prisma/client";
 
 
 
-export default function TaskCard({ elem }) {
+
+export default function TaskCard({ elem }: { elem: Task }) {
 
     const { setTaskDetailModal } = useTaskUi2()
 
@@ -29,6 +30,7 @@ export default function TaskCard({ elem }) {
 
         setTaskDetailModal(prev => prev === id ? null : id)
     }
+    
 
     return (
 
@@ -65,7 +67,11 @@ export default function TaskCard({ elem }) {
                         <RiTimeLine className="w-4 h-4" />
 
                         <h1 className="text-[11px] text-gray-400">
-                            <TimeAgo time={elem.dueDate} />
+                            {
+                                elem.dueDate && (
+                                    <TimeAgo time={elem.dueDate} />
+                                )
+                            }
                         </h1>
                     </div>
                     {
@@ -74,7 +80,11 @@ export default function TaskCard({ elem }) {
                                 <RiFileCheckFill className="w-4 h-4" />
 
                                 <h1 className="text-[11px] text-gray-400">
-                                    <TimeAgo time={elem.completedAt} />
+                                    {
+                                        elem.completedAt && (
+                                            <TimeAgo time={elem.completedAt} />
+                                        )
+                                    }
                                 </h1>
                             </div>
                         )
@@ -84,7 +94,7 @@ export default function TaskCard({ elem }) {
 
                 <div className="w-6 h-6 rounded-full border border-gray-700 bg-gray-700/50 flex items-center justify-center">
                     <span className="text-[9px] text-gray-300">
-                        <Names userName={elem.assignedTo?.username} />
+                        <Names userName={elem.assignedTo?.user.username} />
                     </span>
                 </div>
 

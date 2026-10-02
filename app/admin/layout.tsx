@@ -1,6 +1,7 @@
 import AdminLeftSide from "@/components/adminpagescomponent/leftside/AdminLeftSide";
 import { checkPageRole } from "@/libs/auth/checkPageRole";
 import AddMemberModal from "@/modals/AddMemberModal";
+import AddTeamMember from "@/modals/AddTeamMember";
 import EventCreationModal from "@/modals/EventCreationModal";
 import MemberAddToEventModal from "@/modals/MemberAddToEventModal";
 import ParticularEventModal from "@/modals/ParticularEventModal";
@@ -47,7 +48,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <TaskUpdationModal />
 
             {/* task member to event */}
-            
+
             <MemberAddToEventModal />
 
             {/* event creation modal */}
@@ -55,6 +56,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <EventCreationModal />
 
             <ParticularEventModal />
+
+            <AddTeamMember />
 
             <div className="w-[21%] h-[100%]">
                 <AdminLeftSide />

@@ -2,7 +2,7 @@
 import { useTask } from "@/hooks/useTask";
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core'
 import TaskColumn from "./TaskColumn";
-import { act, useState } from "react";
+import { useState } from "react";
 import { Task } from "@/app/generated/prisma/client";
 import TaskCard from "./TaskCard";
 import { Status, useTaskUi1 } from "@/contexts/taskContext/TaskContext";
@@ -41,8 +41,8 @@ export default function KanbanBoard() {
             return
         }
 
-        if(taskStatus !== "REVIEW"){
-            return 
+        if (taskStatus !== "REVIEW") {
+            return
         }
 
         if (status !== 'DONE') {
@@ -74,7 +74,7 @@ export default function KanbanBoard() {
             <DragOverlay>
                 {activeId ? (
                     <div className="">
-                        <TaskCard elem={activeId}  />
+                        <TaskCard elem={activeId} />
                     </div>
                 ) : null}
             </DragOverlay>

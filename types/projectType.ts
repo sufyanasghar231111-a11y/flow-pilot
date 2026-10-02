@@ -19,9 +19,22 @@ export type ProjectStatType = {
     deadline: string;
 }
 
+
 export type UpdatePropType = {
-    id?:string,
-     name: string; description: string; deadline: string; startDate: string; status: string
+    id?: string,
+    name: string;
+    description: string;
+    deadline: string;
+    startDate: string;
+    status: string;
+    projectmembers?: {
+        id: string
+        user: {
+            user: {
+                id: string
+            }
+        }
+    }[]
 }
 
 export type ProjectType = {

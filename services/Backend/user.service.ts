@@ -10,7 +10,7 @@ export const userService = {
         const getProject = await prisma.projectMember.findMany(
             {
                 where: {
-                    userId: user.userId
+                    teamMemberId: user.userId
                 },
 
                 include: {

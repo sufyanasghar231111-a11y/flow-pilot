@@ -33,11 +33,11 @@ export default function CalendarEvent({ elem }) {
             </div>
 
             <div className="flex items-center gap-0.5 flex-wrap">
-                {elem.eventMember.slice(0, 3).map((data: { id:  null; username: string }) => {
+                {elem.eventMember.slice(0, 3).map((data: { id: null; username: string }) => {
                     return (
                         <div key={data.member.id}>
                             <div className="w-5 h-5 bg-gray-600 rounded-full text-[10px] flex items-center justify-center ring-1 ring-[#0e101d]">
-                                <Names userName={data.member.username} />
+                                <Names userName={data.member.user.username} />
                             </div>
                         </div>
                     );

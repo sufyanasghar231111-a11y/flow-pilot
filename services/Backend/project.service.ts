@@ -43,6 +43,18 @@ export const projectService = {
         const limit = 8
         const skip = (page - 1) * limit
 
+        const findAdmin = await prisma.user.findUnique(
+            {
+                where: {
+                    id: admin.userId
+                }
+            }
+        )
+
+        if (!findAdmin) {
+            throw new Error("Only Admin Can Get")
+        }
+
         const findProject = await prisma.project.findMany(
             {
                 where: {
@@ -67,14 +79,18 @@ export const projectService = {
                     },
                     projectmembers: {
                         select: {
+                            id: true,
                             user: {
                                 select: {
-                                    id: true,
-                                    username: true,
-                                    email: true
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            username: true,
+                                            email: true
+                                        }
+                                    }
                                 }
-                            },
-                            id: true
+                            }
                         },
 
                     }
@@ -281,12 +297,22 @@ export const projectService = {
             throw new Error('only admin can do this ')
         }
 
+        const teamMember = await prisma.teamMember.findFirst({
+            where: {
+                userId: userid,
+                adminId: admin.userId
+            }
+        })
+
+        if (!teamMember) {
+            throw new Error('team member is not found')
+        }
 
         const addMember = await prisma.projectMember.create(
             {
                 data: {
                     projectId: projectid,
-                    userId: userid,
+                    teamMemberId: teamMember.id,
                 }
             }
         )
@@ -312,13 +338,19 @@ export const projectService = {
                     status: true,
                     projectmembers: {
                         select: {
+                            id: true,
                             user: {
                                 select: {
-                                    id: true,
-                                    username: true
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            username: true,
+                                            email: true
+                                        }
+                                    }
                                 }
                             }
-                        }
+                        },
                     }
                 }
             }

@@ -15,7 +15,7 @@ import { useSearchParams } from "next/navigation";
 
 type ProjectMember = {
     AddMember: (projectId: string, userId: string) => void;
-    allUser: userType | [];
+    allUser: userType[];
     removeMember: (projectId: string, userId: string) => void;
     userPage: number;
     setUserPage: React.Dispatch<React.SetStateAction<number>>
@@ -27,7 +27,7 @@ export const memberProvider = createContext<ProjectMember | null>(null)
 
 export default function MemberContext({ children }: { children: ReactNode }) {
     const { getAllProject } = useProject()
-    const [allUser, setAllUser] = useState<userType | []>([])
+    const [allUser, setAllUser] = useState<userType[]>([])
     const { authReady } = useLogin()
     const { setAddMemberModal } = useProjectUi1()
     const [userPage, setUserPage] = useState(1)

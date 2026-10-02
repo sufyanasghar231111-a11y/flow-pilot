@@ -1,6 +1,7 @@
 "use client"
 
-import { useEventUi2 } from "@/contexts/eventcontext/EventContext"
+import { Names } from "@/components/nameComponent/Names"
+import { useEvent, useEventUi, useEventUi2 } from "@/contexts/eventcontext/EventContext"
 import { TimeAgo } from "@/utils/TimeAgo"
 import { format } from "date-fns"
 
@@ -12,16 +13,19 @@ export default function ParticularEventModal() {
         dayData
     } = useEventUi2()
 
+    const { setAddMemberModal } = useEventUi()
+    const { getSingleEvent } = useEvent()
+
     return (
         <>
             {singleDayModal && (
                 <>
                     <div
                         onClick={() => setSingleDayModal(false)}
-                        className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+                        className="fixed inset-0 z-[299] bg-black/60 backdrop-blur-sm"
                     />
 
-                    <div className="fixed top-1/2 left-1/2 z-[301] flex w-[380px]  max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-white/10 bg-[#171A26] p-5 text-white shadow-2xl">
+                    <div className="fixed top-1/2 left-1/2 z-[300] flex w-[380px]  max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col rounded-2xl border border-white/10 bg-[#171A26] p-5 text-white shadow-2xl">
 
                         <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
 
@@ -55,7 +59,6 @@ export default function ParticularEventModal() {
 
                                     <div key={index}>
 
-                                        {/* ================= EVENT ================= */}
                                         {elem.types === "event" && (
                                             <div
                                                 className={`
@@ -134,11 +137,34 @@ export default function ParticularEventModal() {
                                                     </div>
 
                                                 </div>
+                                                <div className="px-3 pl-5 pt-2">
+                                                    <div className="flex items-center gap-1">
+                                                        {elem.eventMember.slice(0, 3).map((data: { id: null; username: string }) => {
+                                                            return (
+                                                                <div key={data.member.id}>
+                                                                    <div className=" w-5 h-5 rounded-full text-xs flex items-center justify-center bg-gray-700">
+                                                                        <Names userName={data.member.user.username} />
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
 
+                                                        {elem.eventMember.length > 3 ? (
+                                                            <div className="w-5 h-5 rounded-full text-xs flex items-center justify-center bg-gray-700">
+                                                                <div>+{elem.eventMember.length - 3}</div>
+                                                            </div>
+                                                        ) : null}
+                                                        <div
+                                                            onClick={() => {
+                                                                setAddMemberModal(true);
+                                                                getSingleEvent(elem?.id);
+                                                            }} className=" w-5 h-5 rounded-full text-xs flex items-center justify-center cursor-pointer bg-gray-700">+</div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
 
-                                        {/* ================= PROJECT DEADLINE ================= */}
+
                                         {elem.types === "project" && (
                                             <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 transition hover:border-red-500/40 hover:bg-red-500/15">
 
@@ -169,7 +195,7 @@ export default function ParticularEventModal() {
                                             </div>
                                         )}
 
-                                        {/* ================= PROJECT COMPLETED ================= */}
+
                                         {elem.types === "projects" && (
                                             <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 p-3 transition hover:border-emerald-400/40 hover:bg-emerald-500/15">
 

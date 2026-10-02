@@ -76,11 +76,13 @@ export default function TaskUpdationModal() {
                                         name='assignedToId'
                                         className="w-full rounded-md border border-white/10 bg-[#1d2130] px-3 py-2 text-xs text-gray-300 outline-none focus:border-blue-500/50"
                                     >
-                                        
+
 
                                         {
                                             singleTaskData?.project?.projectmembers.map((elem) => {
-                                                return <option value={elem.user.id} key={elem.user.id}>{elem.user.username}</option>
+                                                console.log(singleTaskData);
+                                                
+                                                return <option value={elem.user.user.id} key={elem.user.user.id}>{elem.user.user.username}</option>
                                             })
                                         }
 

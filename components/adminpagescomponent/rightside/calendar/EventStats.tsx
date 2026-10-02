@@ -9,6 +9,8 @@ export default function EventStats() {
 
     const deadLinData = getProject.filter(elem => elem.deadline).length
 
+    
+
 
     const data = [
         {

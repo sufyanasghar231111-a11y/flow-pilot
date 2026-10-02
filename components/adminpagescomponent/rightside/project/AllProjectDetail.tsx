@@ -20,7 +20,7 @@ type GetProjectType = {
 export default function AllProjectDetail() {
     const { getProject } = useProject()
     const { filterDate, setFilterData } = useUiProject2()
-    const filterProject = getProject.filter(elem => elem.status.toLowerCase().includes(filterDate.toLowerCase()))
+    const filterProject = getProject.filter((elem: GetProjectType) => elem.status.toLowerCase().includes(filterDate.toLowerCase()))
 
 
     return (

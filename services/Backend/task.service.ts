@@ -10,13 +10,26 @@ export class taskService {
 
         const createdBy = await getAuthUser(request)
 
+        const teamMember = await prisma.teamMember.findFirst(
+            {
+                where: {
+                    userId: assignedToId,
+                    adminId: createdBy.userId
+                }
+            }
+        )
+
+        if (!teamMember) {
+            throw new Error('user is not team member')
+        }
+
         const projectMember = await prisma.project.findFirst(
             {
                 where: {
                     id: projectid,
                     projectmembers: {
                         some: {
-                            userId: assignedToId
+                            teamMemberId: teamMember.id
                         }
                     }
                 }
@@ -35,7 +48,7 @@ export class taskService {
                     description,
                     priority,
                     dueDate,
-                    assignedToId,
+                    assignedToId: teamMember.id,
                     createdById: createdBy.userId
                 }
             }
@@ -56,8 +69,13 @@ export class taskService {
                     assignedTo: {
                         select: {
                             id: true,
-                            username: true,
-                            email: true
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    email: true
+                                }
+                            }
                         }
                     }
                 },
@@ -74,6 +92,18 @@ export class taskService {
     static async getTaskById(projectid: string, request: NextRequest) {
 
         const createdByAdmin = await getAuthUser(request)
+
+        const find = await prisma.user.findUnique(
+            {
+                where:{
+                    id:createdByAdmin.userId
+                }
+            }
+        )
+
+        if(!find){
+            throw new Error('Only admin can get')
+        }
 
         const getTaskById = await prisma.task.findMany(
             {
@@ -348,18 +378,30 @@ export class taskService {
                     dueDate: true,
                     assignedTo: {
                         select: {
-                            username: true,
-                            id: true
+                            id: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    email: true
+                                }
+                            }
                         }
                     },
                     project: {
                         select: {
                             projectmembers: {
                                 select: {
+                                    id: true,
                                     user: {
                                         select: {
-                                            id: true,
-                                            username: true
+                                            user: {
+                                                select: {
+                                                    id: true,
+                                                    username: true,
+                                                    email: true
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -377,6 +419,18 @@ export class taskService {
     static async updateTask(taskid: string, name: string, description: string, priority: Priority, dueDate: Date | undefined, assignedToId: string, request: NextRequest) {
         const admin = await getAuthUser(request)
 
+        const teamMember = await prisma.teamMember.findFirst(
+            {
+                where: {
+                    userId: assignedToId,
+                    adminId: admin.userId
+                }
+            }
+        )
+
+        if (!teamMember) {
+            throw new Error("User is not team member")
+        }
 
         const find = await prisma.task.findUnique(
             {
@@ -400,7 +454,7 @@ export class taskService {
                     },
                     projectmembers: {
                         some: {
-                            userId: assignedToId
+                            teamMemberId: teamMember.id
                         }
                     },
                 }
@@ -422,7 +476,7 @@ export class taskService {
                     ...(description !== undefined && { description }),
                     ...(priority !== undefined && { priority }),
                     ...(dueDate !== undefined && { dueDate }),
-                    ...(assignedToId !== undefined && { assignedToId }),
+                    ...(assignedToId !== undefined && { assignedToId: teamMember.id }),
                 }
             }
         )

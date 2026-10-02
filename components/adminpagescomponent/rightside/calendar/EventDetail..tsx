@@ -31,15 +31,15 @@ export default function EventDetail({ data }) {
                                 <div key={`${elem.types}-${elem.id}`} className=" flex items-center justify-between  hover mt-3 px-3 py-1">
                                     <div className="flex items-center gap-2">
                                         <div className={`p-1.25 rounded-full ${elem.type === "PROJECT_MEETING" && "bg-purple-500"}
-                                                      ${elem.type === "DEADLINE" && "bg-red-700"}
-                                                       ${elem.type === "PERSONAL_MEETING" && "bg-blue-600"}`}></div>
+                                            ${elem.type === "DEADLINE" && "bg-red-700"}
+                                             ${elem.type === "PERSONAL_MEETING" && "bg-blue-600"}`}></div>
                                         <div>
                                             <div className="text-sm w-35 truncate">{elem.name}</div>
                                             <div className="text-[10px] font-semibold "> {format(new Date(elem.startTime), 'hh-mm a')} - {format(new Date(elem.endTime), 'hh-mm a')}</div>
                                         </div>
                                     </div>
                                     <div className="text-[10px] font-semibold "><TimeAgo time={elem.date} /></div>
-
+                                    
                                 </div>
                             )}
                             {elem.types === 'project' && (

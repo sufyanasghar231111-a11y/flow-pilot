@@ -18,13 +18,34 @@ model User {
 
   logouts        Logout[]
   projects       Project[]
-  projectmembers ProjectMember[]
-  assignedTask   Task[]          @relation("AssignedTask")
+
   createdTask    Task[]          @relation("CreatedTask")
   
   admin          Event[]        
-  member         EventMember[]
+  
+  user           TeamMember[]    @relation("user")    
+  byAdmin        TeamMember[]    @relation("admin")    
 }
+
+
+model TeamMember {
+  id                String           @id @default(cuid())
+  userId            String           
+  adminId           String
+
+  user              User             @relation("user", fields:[userId], references:[id])
+  byAdmin           User             @relation("admin", fields:[adminId], references:[id])
+
+  createdAt         DateTime          @default(now())
+
+  
+  projectmembers    ProjectMember[]
+  assignedTask      Task[]             @relation("AssignedTask")
+  member            EventMember[]
+
+  @@unique([userId, adminId])
+}
+
 
 model Logout {
   id          String   @id @default(cuid())
@@ -34,7 +55,7 @@ model Logout {
   userAgent   String
   revoke      Boolean  @default(false)
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Project {
@@ -53,32 +74,34 @@ model Project {
 }
 
 model ProjectMember {
-  id        String   @id @default(cuid())
-  userId    String
-  projectId String
-  createdAt DateTime @default(now())
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id])
+  id              String         @id @default(cuid())
+  teamMemberId    String
+  projectId       String
+  
+  createdAt       DateTime       @default(now())
 
-  @@unique([userId, projectId])
+  project         Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user            TeamMember     @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([teamMemberId, projectId])
 }
 
 model Task {
-  id           String     @id @default(cuid())
+  id           String          @id @default(cuid())
   name         String
   description  String?
-  priority     Priority   @default(MEDIUM)
-  status       TaskStatus @default(TODO)
+  priority     Priority        @default(MEDIUM)
+  status       TaskStatus      @default(TODO)
   dueDate      DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
   createdById  String
   assignedToId String?
   projectId    String
   completedAt  DateTime?
-  assignedTo   User?      @relation("AssignedTask", fields: [assignedToId], references: [id])
-  createdBy    User       @relation("CreatedTask", fields: [createdById], references: [id])
-  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignedTo   TeamMember?      @relation("AssignedTask", fields: [assignedToId], references: [id])
+  createdBy    User             @relation("CreatedTask", fields: [createdById], references: [id])
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, name])
 }
@@ -89,7 +112,7 @@ model Event {
   date          DateTime
   startTime     DateTime
   endTime       DateTime
-  createdAt DateTime @default(now())
+  createdAt     DateTime   @default(now())
 
   adminId       String
   admin         User       @relation( fields:[adminId], references:[id])
@@ -106,8 +129,8 @@ model EventMember {
   eventId       String
   memberId      String
   createdAt     DateTime   @default(now()) 
-  event         Event      @relation( fields:[eventId], references:[id])
-  member        User       @relation( fields:[memberId], references:[id])
+  event         Event      @relation( fields:[eventId], references:[id], onDelete:Cascade)
+  member        TeamMember @relation( fields:[memberId], references:[id], onDelete:Cascade)
 
   @@unique([eventId, memberId])
 

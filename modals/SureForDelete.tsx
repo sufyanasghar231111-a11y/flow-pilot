@@ -10,8 +10,8 @@ export default function SureForDelete() {
     const { deleteProject } = useUpdateProject()
     const { singleProjectData } = useProject()
 
-    // TODO: replace with the actual project name from context
-    const projectName = singleProjectData?.name
+    const projectName = (singleProjectData?.name)?.trim()
+
 
     const isMatch = confirmText.trim() === projectName
 

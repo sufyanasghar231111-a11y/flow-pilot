@@ -4,7 +4,7 @@ import { useTask } from "@/hooks/useTask"
 import { RiDeleteBinLine, RiEditLine } from "@remixicon/react"
 
 export default function TaskDetail({ elem }) {
-    const { taskDetailModal, setTaskDetailModal, setTaskDeletionModal,setTaskUpdateModal } = useTaskUi2()
+    const { taskDetailModal, setTaskDetailModal, setTaskDeletionModal, setTaskUpdateModal } = useTaskUi2()
     const { singleTaskById } = useTask()
 
     return (

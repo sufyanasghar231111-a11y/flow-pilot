@@ -40,10 +40,10 @@ export class EventService {
     static async getEvent(request: NextRequest) {
         const admin = await getAuthUser(request)
 
-        const findAdmin = await prisma.event.findFirst(
+        const findAdmin = await prisma.user.findUnique(
             {
                 where: {
-                    adminId: admin.userId
+                    id: admin.userId
                 },
 
             }
@@ -67,10 +67,16 @@ export class EventService {
                     type: true,
                     eventMember: {
                         select: {
+                            id: true,
                             member: {
                                 select: {
-                                    id: true,
-                                    username: true
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            email: true,
+                                            username: true
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -85,35 +91,26 @@ export class EventService {
     static async createMember(eventid: string, userid: string, request: NextRequest) {
         const admin = await getAuthUser(request)
 
-        const findAdmin = await prisma.event.findFirst(
+        const teamMember = await prisma.teamMember.findFirst(
             {
                 where: {
+                    userId: userid,
                     adminId: admin.userId
                 }
             }
         )
 
-        if (!findAdmin) {
-            throw new Error("Only Admin Can Get")
+        if (!teamMember) {
+            throw new Error("User is not Team member")
         }
 
-        const findMember = await prisma.eventMember.findFirst(
-            {
-                where: {
-                    memberId: userid
-                }
-            }
-        )
 
-        if (findMember) {
-            throw new Error("User is already add")
-        }
 
         const createMember = await prisma.eventMember.create(
             {
                 data: {
                     eventId: eventid,
-                    memberId: userid
+                    memberId: teamMember.id
                 }
             }
         )
@@ -124,6 +121,19 @@ export class EventService {
 
     static async removeMember(eventid: string, userid: string, request: NextRequest) {
         const admin = await getAuthUser(request)
+
+        const teamMember = await prisma.teamMember.findFirst(
+            {
+                where: {
+                    userId: userid,
+                    adminId: admin.userId
+                }
+            }
+        )
+
+        if (!teamMember) {
+            throw new Error("User is not Team member")
+        }
 
         const findAdmin = await prisma.event.findFirst(
             {
@@ -141,7 +151,7 @@ export class EventService {
             where: {
                 eventId_memberId: {
                     eventId: eventid,
-                    memberId: userid
+                    memberId: teamMember.id
                 }
             }
         })
@@ -154,10 +164,10 @@ export class EventService {
     static async countEvent(request: NextRequest) {
         const admin = await getAuthUser(request)
 
-        const findAdmin = await prisma.event.findFirst(
+        const findAdmin = await prisma.user.findUnique(
             {
                 where: {
-                    adminId: admin.userId
+                    id: admin.userId
                 }
             }
         )
@@ -256,7 +266,7 @@ export class EventService {
         const event = await prisma.event.findFirst(
             {
                 where: {
-                    id:eventid
+                    id: eventid
                 },
                 select: {
                     id: true,
@@ -267,10 +277,16 @@ export class EventService {
                     type: true,
                     eventMember: {
                         select: {
+                            id: true,
                             member: {
                                 select: {
-                                    id: true,
-                                    username: true
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            email: true,
+                                            username: true
+                                        }
+                                    }
                                 }
                             }
                         }

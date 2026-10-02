@@ -3,9 +3,16 @@ import { Names } from "@/components/nameComponent/Names";
 import { TimeAgo } from "@/utils/TimeAgo";
 import { useProject } from "@/hooks/useProject";
 import { useProjectUi1, useUpdateProject } from "@/contexts/projectContext/ProjectContext";
+import { userType } from "@/types/usertype";
 
-type ProjectMember = {
-    user: object,
+
+
+type Member = {
+    user:userType
+}
+
+type User ={
+    user:Member
 }
 
 type ElemType = {
@@ -79,9 +86,9 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
 
             <div className="flex items-center">
                 {
-                    elem.projectmembers.map((item: ProjectMember) => {
-                        const name = item.user.username
-                        return <div key={item.user?.id} className="flex h-6 w-6 items-center justify-center rounded-full border border-[#252938] bg-[#202431] text-[10px]">
+                    elem.projectmembers.map((item: User) => {
+                        const name = item.user?.user.username
+                        return <div key={item.user?.user?.id} className="flex h-6 w-6 items-center justify-center rounded-full border border-[#252938] bg-[#202431] text-[10px]">
                             <Names userName={name} />
                         </div>
 

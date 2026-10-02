@@ -1,26 +1,33 @@
 "use client"
-import { Names } from "@/components/nameComponent/Names"
-import { useEvent, useEventUi } from "@/contexts/eventcontext/EventContext"
-import { useTeam } from "@/contexts/teamContext/TeamContext"
-import { userType } from "@/types/usertype"
-import { useState } from "react"
+import { Names } from "@/components/nameComponent/Names";
+import UserPagination from "@/components/usercomponent/userPagination";
+import { useMember } from "@/contexts/memberContext/MemberContext";
+import { useTeam, useTeamUi1 } from "@/contexts/teamContext/TeamContext";
+import { userType } from "@/types/usertype";
+import { useState } from "react";
 
-export default function MemberAddToEventModal() {
-    const { addMemberModal, setAddMemberModal } = useEventUi()
-    const { updateEventMember, singleEventData, removeEventMember } = useEvent()
+
+export default function AddTeamMember() {
+    const { teamMemberModal, setTeamMemberModal, } = useTeamUi1()
+    const { inviteMember, memberData, removeTeamMember } = useTeam()
     const [searchData, setSearchData] = useState('')
-    const { memberData } = useTeam()
+    const { allUser } = useMember()
     const search = searchData.trim().toLowerCase()
-    const filterData = memberData?.member.filter((elem: { username: string }) => elem.username.trim().toLowerCase().includes(search))
-
-
+    const filterData = allUser.filter((elem: { username: string; email: string; }) => elem.username.toLowerCase().includes(search) ||
+        elem.email.toLowerCase().includes(search)
+    )
     return (
         <>
-            {
-                addMemberModal && (
+            <div>
+                {teamMemberModal && (
                     <>
-                        <div onClick={() => { setAddMemberModal(false) }}
-                            className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm" />
+                        <div
+                            onClick={() => {
+                                setTeamMemberModal(false)
+                            }
+                            }
+                            className="w-full h-full inset-0 bg-black/50 fixed z-300 backdrop-blur-sm"
+                        />
 
                         <div className="w-96 fixed top-1/2 left-1/2 rounded-xl -translate-x-1/2 -translate-y-1/2 z-301 bg-[#171A26] text-gray-200 border border-white/[0.06] shadow-2xl shadow-black/40 flex flex-col max-h-[32rem]">
 
@@ -31,12 +38,12 @@ export default function MemberAddToEventModal() {
                                     </h2>
 
                                     <p className="text-xs text-gray-500 mt-0.5">
-                                        Invite teammates to this Event
+                                        Invite teammates to this project
                                     </p>
                                 </div>
 
                                 <button
-                                    onClick={() => setAddMemberModal(false)}
+                                    onClick={() => setTeamMemberModal(false)}
                                     className="text-gray-500 hover:text-gray-300 transition-colors rounded-md p-1 -mr-1 -mt-1 hover:bg-white/5"
                                     aria-label="Close"
                                 >
@@ -62,22 +69,17 @@ export default function MemberAddToEventModal() {
 
                             <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-0.5">
 
-                                {filterData?.map((user: userType) => {
-                                    const find = singleEventData?.eventMember?.some(
-                                        (elem) => elem.member?.user.id === user.id
-                                    )
-                                    console.log(user);
-
+                                {filterData.map((user: userType) => {
+                                    const find = memberData?.member.some((elem: { id: string; }) => elem.id === user.id)
+                                    console.log(filterData);
+                                    
                                     return (
                                         <div key={user.id}>
                                             <button
-                                                onClick={() => {
-                                                    if (!singleEventData?.id) return
-                                                    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                                                onClick={() =>
                                                     find
-                                                        ? removeEventMember(singleEventData?.id, user.id)
-                                                        : updateEventMember(singleEventData?.id, user.id)
-                                                }
+                                                        ? removeTeamMember(user.id)
+                                                        : inviteMember(user.id)
                                                 }
                                                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${find
                                                     ? "bg-blue-800/60 border border-blue-400/60"
@@ -98,9 +100,13 @@ export default function MemberAddToEventModal() {
                                                     </p>
                                                 </div>
 
-                                                {find && (
+                                                {find ? (
                                                     <span className="text-xs text-blue-300">
                                                         Selected
+                                                    </span>
+                                                ):(
+                                                    <span className="text-xs text-blue-300">
+                                                        {user.role}
                                                     </span>
                                                 )}
                                             </button>
@@ -112,11 +118,12 @@ export default function MemberAddToEventModal() {
 
                             </div>
 
+                            <UserPagination />
+
                         </div>
                     </>
-                )
-            }
-
+                )}
+            </div>
         </>
     )
 }

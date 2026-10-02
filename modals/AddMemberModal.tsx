@@ -5,19 +5,21 @@ import { useMember } from "@/contexts/memberContext/MemberContext"
 import { Names } from "@/components/nameComponent/Names"
 import { useProject } from "@/hooks/useProject"
 import { userType } from "@/types/usertype"
-import UserPagination from "@/components/usercomponent/userPagination"
 import { useState } from "react"
+import { useTeam } from "@/contexts/teamContext/TeamContext"
 
 export default function AddMemberModal() {
     const { addMemberModal, setAddMemberModal } = useProjectUi1()
-    const { allUser, AddMember, removeMember, } = useMember()
+    const { AddMember, removeMember, } = useMember()
+    const { memberData } = useTeam()
     const { singleProjectData } = useProject()
     const [searchData, setSearchData] = useState('')
     const search = searchData.trim().toLowerCase()
-    const filterData = allUser.filter(elem  => elem.username.toLowerCase().includes(search) ||
+    const filterData = memberData?.member.filter((elem: { username: string; email: string }) => elem.username.toLowerCase().includes(search) ||
         elem.email.toLowerCase().includes(search)
     )
-    
+
+
     return (
         <div>
             {addMemberModal && (
@@ -70,17 +72,22 @@ export default function AddMemberModal() {
 
                         <div className="flex-1 overflow-y-auto px-3 pb-2 space-y-0.5">
 
-                            {filterData.map((user: userType) => {
-                                const find = singleProjectData?.projectmembers.some(
-                                    (elem: { user: { id: string } }) => elem.user.id === user.id
+                            {filterData?.map((user: userType) => {
+                                const find = singleProjectData?.projectmembers?.some(
+                                    (elem: { user: { user: { id: string } } }) => elem.user.user.id === user.id
                                 )
+
                                 return (
                                     <div key={user.id}>
                                         <button
-                                            onClick={() =>
+                                            onClick={() => {
+
+                                                if (!singleProjectData?.id) return
+                                                // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                                                 find
                                                     ? removeMember(singleProjectData?.id, user.id)
                                                     : AddMember(singleProjectData?.id, user.id)
+                                            }
                                             }
                                             className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${find
                                                 ? "bg-blue-800/60 border border-blue-400/60"
@@ -114,8 +121,6 @@ export default function AddMemberModal() {
                             )}
 
                         </div>
-
-                        <UserPagination />
 
                     </div>
                 </>

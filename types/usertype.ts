@@ -1,4 +1,5 @@
 export type userType = {
+    createdAt: string
     id:string,
     username:string,
     email:string,

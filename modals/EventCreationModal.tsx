@@ -48,6 +48,7 @@ export default function EventCreationModal() {
                                 <div>
                                     <label className={labelClass}>Type</label>
                                     <select onChange={handleEventChange} value={event.type} name="type" className={inputClass} >
+                                        <option value="Select Status">Select Status</option>
                                         <option value="PROJECT_MEETING" className="bg-[#171A26]">PROJECT_MEETING</option>
                                         <option value="DEADLINE" className="bg-[#171A26]">DEADLINE</option>
                                         <option value="PERSONAL_MEETING" className="bg-[#171A26]">PERSONAL_MEETING</option>

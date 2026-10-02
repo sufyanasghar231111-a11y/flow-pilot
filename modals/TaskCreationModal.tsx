@@ -136,8 +136,9 @@ export default function TaskCreationModal() {
                                     <option>Select A Member</option>
                                     {
                                         singleProjectData?.projectmembers.map((elem) => {
-                                            return <option value={elem.user.id} key={elem.user.id} >
-                                                {elem.user.username}
+                                            
+                                            return <option value={elem.user.user.id} key={elem.user.user.id} >
+                                                {elem.user.user.username}
                                             </option>
                                         })
                                     }

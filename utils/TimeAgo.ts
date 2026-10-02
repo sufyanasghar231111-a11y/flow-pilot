@@ -1,9 +1,11 @@
 
 type TimeType = {
-    time: string
+    time: string | Date | null
 }
 
 export function TimeAgo({ time }: TimeType) {
+    if(!time) return
+    
     const date = new Date(time)
 
     const format = date.toLocaleDateString('en', {

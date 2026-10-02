@@ -1,5 +1,5 @@
 import { useEvent } from "@/contexts/eventcontext/EventContext";
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip, TooltipProps } from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 type Segment = {
     label: string;
@@ -12,12 +12,12 @@ export default function EventSummary() {
 
     const data: Segment[] = [
         { label: 'Total Event', value: eventStat.totalEvent, color: '#3B82F6' },
-        { label: 'Project Meeting', value: eventStat.totalPersonalMeeting, color: '#A855F7' },
+        { label: 'Project Meeting', value: eventStat.totalProjectMeeting, color: '#A855F7' },
         { label: 'Deadlines', value: eventStat.totalDeadLine, color: '#EF4444' },
         { label: 'Personal Meeting', value: eventStat.totalPersonalMeeting, color: '#22C55E' },
     ]
 
-    const CustomTooltip = ({ active, payload }: any) => {
+    const CustomTooltip = ({ active, payload }: unknown) => {
         if (!active || !payload?.length) return null;
         const { label, value, color } = payload[0].payload;
 

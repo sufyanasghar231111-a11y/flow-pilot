@@ -11,7 +11,7 @@ export async function DELETE(request: NextRequest,
         const { projectid, member } = await params
 
         const deleteMember = await memberService.removeMember(
-            projectid, member
+            projectid, member, request
         )
 
         return Response.json(

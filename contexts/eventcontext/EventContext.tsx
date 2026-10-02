@@ -4,7 +4,7 @@ import { tryCatch } from "@/utils/tryCatch";
 import React, { ReactNode, useContext, useEffect, useState, createContext } from "react";
 import { useLogin } from "../authContext/AuthContext";
 import { EventType } from "@/app/generated/prisma/enums";
-import { AuthUser, userType } from "@/types/usertype";
+import { userType } from "@/types/usertype";
 import { EventTypeState } from "@/types/eventType";
 
 interface EventInterface {
@@ -20,10 +20,6 @@ interface EventInterface {
 
 
 
-type EventMember = {
-    length: number;
-    member: userType
-}
 
 type EventTypes = {
     id?: string;
@@ -32,20 +28,26 @@ type EventTypes = {
     startTime: string;
     endTime: string;
     type: EventType
-    eventMember: EventMember
+    eventMember?: {
+        member: {
+            user: {
+                id: string
+            }
+        }
+    }[]
 }
 
 interface EventContext {
     eventStat: EventInterface,
     eventData: EventTypes[]
-    singleEventData: EventType | null;
+    singleEventData: EventTypes | null;
     getSingleEvent: (eventid: string) => void;
     updateEventMember: (eventid: string, userid: string) => void;
     removeEventMember: (eventid: string, userid: string) => void;
     createEvent: () => void;
 }
 
-type EventUi1Type<T> = {
+type EventUi1Type = {
     addMemberModal: boolean;
     setAddMemberModal: React.Dispatch<React.SetStateAction<boolean>>;
     event: EventTypeState;
@@ -87,7 +89,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
     const [eventData, setEventData] = useState<EventTypes[]>([])
     const [addMemberModal, setAddMemberModal] = useState<boolean>(false)
     const { authReady } = useLogin()
-    const [singleEventData, setSingleEventData] = useState<EventType | null>(null)
+    const [singleEventData, setSingleEventData] = useState<EventTypes | null>(null)
 
     const [event, setEvent] = useState<EventTypeState>(
         {
@@ -166,7 +168,6 @@ export default function EventContext({ children }: { children: ReactNode }) {
             console.log(error);
             return
         }
-        console.log(res?.data.event);
 
         setSingleEventData(res?.data.event)
 
@@ -179,6 +180,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
             return
         }
         await getEvent()
+        setAddMemberModal(false)
     }
 
     async function removeEventMember(eventid: string, userid: string) {
@@ -188,7 +190,9 @@ export default function EventContext({ children }: { children: ReactNode }) {
             return
         }
         await getEvent()
+        setAddMemberModal(false)
     }
+
 
     const startTime = `${event.date}T${event.startTime}`
     const endTime = `${event.date}T${event.endTime}`
@@ -201,6 +205,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
             endTime: endTime,
             type: event.type
         }))
+
 
         if (error) {
             console.log(error);

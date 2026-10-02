@@ -6,6 +6,7 @@ import React, { ReactNode, useEffect, useState, createContext, useContext } from
 import { useLogin } from "../authContext/AuthContext";
 import { ProjectStatsType, ProjectStatType, ProjectType, UpdatePropType } from "@/types/projectType";
 import { useSearchParams } from "next/navigation";
+import { userType } from "@/types/usertype";
 
 
 type UiType1 = {
@@ -33,6 +34,8 @@ type UpdateProjectType = {
     setUpdateProjectModal: React.Dispatch<React.SetStateAction<boolean>>;
     deleteProject: (id: string) => void
 }
+
+
 
 export const projectProvider = createContext<ProjectType | null>(null)
 export const UiProjectProvider1 = createContext<UiType1 | null>(null)

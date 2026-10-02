@@ -1,4 +1,6 @@
+import { getAuthUser } from "@/libs/auth/auth";
 import prisma from "../../libs/db";
+import { NextRequest } from "next/server";
 
 export const memberService = {
 
@@ -8,7 +10,7 @@ export const memberService = {
             {
                 data: {
                     projectId: projectid,
-                    userId: member,
+                    teamMemberId: member,
                 }
             }
         )
@@ -41,14 +43,42 @@ export const memberService = {
         }
     },
 
-    async removeMember(projectid: string, member: string) {
+    async removeMember(projectid: string, member: string, request: NextRequest) {
+
+        const admin = await getAuthUser(request)
+
+        const user = await prisma.user.findUnique(
+            {
+                where: {
+                    id: admin.userId
+                }
+            }
+        )
+
+        if (!user) {
+            throw new Error('only admin can do this ')
+        }
+
+        const teamMember = await prisma.teamMember.findFirst(
+            {
+                where: {
+                    userId: member,
+                    adminId: admin.userId
+                }
+            }
+        )
+
+        if (!teamMember) {
+            throw new Error("User is not found")
+        }
+
 
         const deleteMember = await prisma.projectMember.delete(
             {
                 where: {
-                    userId_projectId: {
+                    teamMemberId_projectId: {
                         projectId: projectid,
-                        userId: member,
+                        teamMemberId: teamMember.id,
                     }
                 }
             }
@@ -57,9 +87,9 @@ export const memberService = {
         return deleteMember
     },
 
-    async  allProjectMember (){
+    async allProjectMember() {
         const getAllMember = await prisma.projectMember.findMany()
         return getAllMember
     }
-    
+
 }

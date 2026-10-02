@@ -20,6 +20,18 @@ export type Status =
     | 'REVIEW'
     | 'DONE'
 
+
+type User = {
+    id: string,
+    username: string,
+    email: string
+}
+
+type AssignedData = {
+    id?: string,
+    user:User
+}
+
 export type TaskState = {
     id?: string,
     name: string
@@ -27,7 +39,8 @@ export type TaskState = {
     priority: string
     dueDate: string;
     assignedToId: string,
-    status?: Status
+    status?: Status,
+    assignedTo?:AssignedData
 }
 
 type TaskContextype = {
@@ -58,8 +71,8 @@ type TaskUiContextType1 = {
 }
 
 type TaskUiContextType2 = {
-    taskDetailModal: null | boolean;
-    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | boolean>>
+    taskDetailModal: null | string;
+    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | string>>
     taskDeletionModal: boolean;
     setTaskDeletionModal: React.Dispatch<React.SetStateAction<boolean>>
     taskUpdateModal: boolean;
@@ -103,7 +116,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     const { getAllProject } = useProject()
     const [getTask, setGetTask] = useState<TaskState[]>([])
     const [warningModal, setWarningModal] = useState(false)
-    const [taskDetailModal, setTaskDetailModal] = useState<null | boolean>(null)
+    const [taskDetailModal, setTaskDetailModal] = useState<null | string>(null)
     const [taskDeletionModal, setTaskDeletionModal] = useState<boolean>(false)
     const [singleTaskData, setSingleTaskData] = useState<TaskState | null>(null)
     const [taskUpdateModal, setTaskUpdateModal] = useState<boolean>(false)
@@ -257,9 +270,12 @@ export default function TaskContext({ children }: { children: ReactNode }) {
                 description: singleTaskData?.description ?? "",
                 priority: singleTaskData?.priority ?? "",
                 dueDate: singleTaskData?.dueDate ? singleTaskData?.dueDate.split("T")[0] : "",
-                assignedToId: singleTaskData?.assignedTo?.id ?? ""
+                assignedToId: singleTaskData?.assignedTo?.user.id ?? ""
             }
         )
+
+        console.log(singleTaskData);
+
 
     }, [singleTaskData])
 
