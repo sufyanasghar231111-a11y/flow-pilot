@@ -21,7 +21,8 @@ interface EventInterface {
 
 
 
-type EventTypes = {
+export type EventTypes = {
+    
     id?: string;
     name: string;
     date: string;
@@ -34,7 +35,8 @@ type EventTypes = {
                 id: string
             }
         }
-    }[]
+    }[];
+    types:'event' | 'project' | 'projects'
 }
 
 interface EventContext {

@@ -8,7 +8,7 @@ export default function ProjectComponent() {
 
     return (
 
-        <div className="px-4 sm:px-6 py-5">
+        <div className="px-4 sm:px-6 pt-23">
             <div>
                 <h1 className="text-xl sm:text-2xl font-semibold">
                     Admin Dashboard
@@ -20,7 +20,7 @@ export default function ProjectComponent() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-5">
 
-                {projectData.map((elem, index) => {
+                {projectData.slice().map((elem, index) => {
                     const Icon = elem.icon
                     return <div key={index}
                         className=" w-full sm:w-[48%] lg:w-[250px] h-fit shrink-0 rounded-xl border border-[#252938] bg-[#171A26] px-4 py-4 group cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:border-blue-500/40 hover:bg-[#1A1D2B] hover:shadow-[0_8px_30px_rgba(59,130,246,0.08)] " >
@@ -44,7 +44,6 @@ export default function ProjectComponent() {
                             </div>
                         </div>
 
-
                         <div className="flex items-center justify-center w-full gap-1.5 pt-5 text-sm">
                             <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500/10 ">
                                 <RiArrowUpLine className="w-4 h-4 text-green-500" />
@@ -57,7 +56,7 @@ export default function ProjectComponent() {
                     </div>
                 })}
 
-                <div className="col-span-2 h-56">
+                <div className="col-span-2 h-56 ">
                     <DonutChart />
                 </div>
             </div>

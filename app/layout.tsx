@@ -8,6 +8,8 @@ import TaskContext from "@/contexts/taskContext/TaskContext";
 import MemberContext from "@/contexts/memberContext/MemberContext";
 import EventContext from "@/contexts/eventcontext/EventContext";
 import TeamContext from "@/contexts/teamContext/TeamContext";
+import AnalyticsContext from "@/contexts/analyticsContext/AnalyticsContext";
+import StoreProvider from "@/store/StoreProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,23 +33,27 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <AuthContext>
-          <ProjectContext>
-            <UserContext>
-              <TaskContext>
-                <MemberContext>
-                  <EventContext>
-                    <TeamContext>
-                      <div>
-                        {children}
-                      </div>
-                    </TeamContext>
-                  </EventContext>
-                </MemberContext>
-              </TaskContext>
-            </UserContext>
-          </ProjectContext>
-        </AuthContext>
+        <StoreProvider>
+          <AuthContext>
+            <ProjectContext>
+              <UserContext>
+                <TaskContext>
+                  <MemberContext>
+                    <EventContext>
+                      <TeamContext>
+                        <AnalyticsContext>
+                          <div>
+                            {children}
+                          </div>
+                        </AnalyticsContext>
+                      </TeamContext>
+                    </EventContext>
+                  </MemberContext>
+                </TaskContext>
+              </UserContext>
+            </ProjectContext>
+          </AuthContext>
+        </StoreProvider>
       </body>
     </html>
   );

@@ -66,7 +66,6 @@ export default function MemberAddToEventModal() {
                                     const find = singleEventData?.eventMember?.some(
                                         (elem) => elem.member?.user.id === user.id
                                     )
-                                    console.log(user);
 
                                     return (
                                         <div key={user.id}>

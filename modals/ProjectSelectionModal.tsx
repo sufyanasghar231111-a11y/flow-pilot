@@ -11,6 +11,9 @@ import {
 } from "@remixicon/react"
 import { useState } from "react"
 
+type Name = {
+    name: string
+}
 
 export default function ProjectSelectionModal() {
     const {
@@ -21,7 +24,7 @@ export default function ProjectSelectionModal() {
 
     const { getProject, getSingleProject } = useProject()
     const [searchInput, setSearchInput] = useState('')
-    const filterData = getProject.filter(elem => elem.name.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))
+    const filterData = getProject.filter((elem: Name) => elem.name.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))    
 
     return (
         <>
@@ -73,6 +76,7 @@ export default function ProjectSelectionModal() {
                                 filterData.length > 0 ? (
                                     filterData?.map((elem: UpdatePropType) => {
                                         return <button onClick={() => {
+                                            if (!elem?.id) return
                                             getSingleProject(elem?.id)
                                             setTaskCreationModal(true)
 

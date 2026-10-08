@@ -1,6 +1,6 @@
 "use client";
 
-import { useProject } from "@/hooks/useProject";
+import { useProject, useProjectStat } from "@/hooks/useProject";
 import { useTask } from "@/hooks/useTask";
 import {
     PieChart,
@@ -18,7 +18,7 @@ type Segment = {
 };
 
 export default function DonutChart() {
-    const { projectStats } = useProject()
+    const { projectStats } = useProjectStat()
 
     const data: Segment[] = [
         { label: "Completed", value: projectStats.totalComplete, color: "#22c55e" },
@@ -45,7 +45,7 @@ export default function DonutChart() {
     };
 
     return (
-        <div className="w-full sm:w-[48%] h-full lg:w-[490px] shrink-0 rounded-xl border border-[#252938] bg-[#171A26] px-4 py-3 group transition-all duration-300 ease-out hover:-translate-y-1 hover:border-blue-500/40 hover:bg-[#1A1D2B] hover:shadow-[0_8px_30px_rgba(59,130,246,0.08)]">
+        <div className="w-full sm:w-[48%] h-full lg:w-[500px] shrink-0 rounded-xl border border-[#252938] bg-[#171A26] px-4 py-3 group transition-all duration-300 ease-out hover:-translate-y-1 hover:border-blue-500/40 hover:bg-[#1A1D2B] hover:shadow-[0_8px_30px_rgba(59,130,246,0.08)]">
             <h1 className="font-semibold">Project Completion</h1>
 
             <div className=" flex h-[90%] gap-4 items-center">

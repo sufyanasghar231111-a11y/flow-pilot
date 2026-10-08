@@ -1,13 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { useProjectUi1, useUpdateProject } from "@/contexts/projectContext/ProjectContext"
+import {  useProjectDelete, useUpdateProject } from "@/contexts/projectContext/ProjectContext"
 import { useProject } from "@/hooks/useProject"
 
 export default function SureForDelete() {
-    const { projectDeleteModal, setProjectDeleteModal } = useProjectUi1()
+    const { projectDeleteModal, setProjectDeleteModal, deleteProject } = useProjectDelete()
     const [confirmText, setConfirmText] = useState("")
-    const { deleteProject } = useUpdateProject()
     const { singleProjectData } = useProject()
 
     const projectName = (singleProjectData?.name)?.trim()
@@ -63,7 +62,10 @@ export default function SureForDelete() {
                                 >
                                     Cancel
                                 </button>
-                                <button onClick={() => { deleteProject(singleProjectData?.id) }}
+                                <button onClick={() => {
+                                    if (!singleProjectData?.id) return
+                                    deleteProject(singleProjectData?.id)
+                                }}
                                     disabled={!isMatch}
                                     className="px-4 py-2 text-sm rounded-md bg-red-600 hover:bg-red-500 disabled:bg-red-600/30 disabled:cursor-not-allowed disabled:hover:bg-red-600/30 text-white transition-colors"
                                 >

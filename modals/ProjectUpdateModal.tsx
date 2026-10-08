@@ -111,7 +111,10 @@ export default function ProjectUpdateModal() {
                                         Cancel
                                     </button>
                                     <button
-                                        onClick={() => { updateProject(singleProjectData?.id) }}
+                                        onClick={() => {
+                                            if (!singleProjectData?.id) return
+                                            updateProject(singleProjectData?.id)
+                                        }}
                                         className="flex-1 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-sm transition-colors"
                                     >
                                         Save Changes

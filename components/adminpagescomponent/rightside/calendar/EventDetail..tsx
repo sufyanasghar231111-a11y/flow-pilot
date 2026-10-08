@@ -1,3 +1,4 @@
+import { EventTypes } from "@/contexts/eventcontext/EventContext"
 import { TimeAgo } from "@/utils/TimeAgo"
 import { format } from "date-fns"
 
@@ -25,7 +26,7 @@ export default function EventDetail({ data }) {
             </header>
             <div className="h-85 overflow-auto custom-scrollbar">
                 {
-                    upcomingEvent.map((elem) => {
+                    upcomingEvent.map((elem: EventTypes) => {
                         return <>
                             {elem.types === 'event' && (
                                 <div key={`${elem.types}-${elem.id}`} className=" flex items-center justify-between  hover mt-3 px-3 py-1">
@@ -39,7 +40,7 @@ export default function EventDetail({ data }) {
                                         </div>
                                     </div>
                                     <div className="text-[10px] font-semibold "><TimeAgo time={elem.date} /></div>
-                                    
+
                                 </div>
                             )}
                             {elem.types === 'project' && (

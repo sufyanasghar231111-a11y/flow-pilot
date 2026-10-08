@@ -11,7 +11,8 @@ type TaskStatsType = {
     pendingTask: number,
     activeTask: number,
     newCompleted: number,
-    newPending: number
+    newPending: number,
+    overDue: number
 }
 
 export type Status =
@@ -29,7 +30,7 @@ type User = {
 
 type AssignedData = {
     id?: string,
-    user:User
+    user: User
 }
 
 export type TaskState = {
@@ -40,7 +41,7 @@ export type TaskState = {
     dueDate: string;
     assignedToId: string,
     status?: Status,
-    assignedTo?:AssignedData
+    assignedTo?: AssignedData
 }
 
 type TaskContextype = {
@@ -71,8 +72,8 @@ type TaskUiContextType1 = {
 }
 
 type TaskUiContextType2 = {
-    taskDetailModal: null | string;
-    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | string>>
+    taskDetailModal: null | string | boolean;
+    setTaskDetailModal: React.Dispatch<React.SetStateAction<null | string | boolean>>
     taskDeletionModal: boolean;
     setTaskDeletionModal: React.Dispatch<React.SetStateAction<boolean>>
     taskUpdateModal: boolean;
@@ -92,7 +93,8 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         pendingTask: 0,
         activeTask: 0,
         newCompleted: 0,
-        newPending: 0
+        newPending: 0,
+        overDue: 0
     })
 
     const [task, setTask] = useState({
@@ -116,7 +118,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     const { getAllProject } = useProject()
     const [getTask, setGetTask] = useState<TaskState[]>([])
     const [warningModal, setWarningModal] = useState(false)
-    const [taskDetailModal, setTaskDetailModal] = useState<null | string>(null)
+    const [taskDetailModal, setTaskDetailModal] = useState<null | string | boolean>(null)
     const [taskDeletionModal, setTaskDeletionModal] = useState<boolean>(false)
     const [singleTaskData, setSingleTaskData] = useState<TaskState | null>(null)
     const [taskUpdateModal, setTaskUpdateModal] = useState<boolean>(false)
@@ -134,7 +136,8 @@ export default function TaskContext({ children }: { children: ReactNode }) {
             pendingTask: res?.data.pendingTask,
             activeTask: res?.data.activeTask,
             newCompleted: res?.data.newCompleted,
-            newPending: res?.data.newPending
+            newPending: res?.data.newPending,
+            overDue: res?.data.overDue
         })
     }
 
@@ -273,9 +276,6 @@ export default function TaskContext({ children }: { children: ReactNode }) {
                 assignedToId: singleTaskData?.assignedTo?.user.id ?? ""
             }
         )
-
-        console.log(singleTaskData);
-
 
     }, [singleTaskData])
 

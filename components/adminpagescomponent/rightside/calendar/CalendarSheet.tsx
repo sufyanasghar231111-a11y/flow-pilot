@@ -3,10 +3,11 @@ import Days from "@/utils/Days";
 import CalendarDay from "./CalendarDay";
 import MonthChange from "./MonthChange";
 import { useProject } from "@/hooks/useProject";
-import { useEvent } from "@/contexts/eventcontext/EventContext";
+import { EventTypes, useEvent } from "@/contexts/eventcontext/EventContext";
 import MinCalendar from "./MinCalendar";
 import EventDetail from "./EventDetail.";
 import EventSummary from "./EventSummary";
+
 
 
 export default function CalendarSheet() {

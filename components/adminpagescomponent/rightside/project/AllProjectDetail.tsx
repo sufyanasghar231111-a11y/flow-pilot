@@ -4,6 +4,7 @@ import ProjectMainDetail from "./ProjectMainDetail";
 import { useUiProject2 } from "@/contexts/projectContext/ProjectContext";
 import ProjectNotFound from "./ProjectNotFound";
 import FilterDataNotFound from "./FilterDataNotFound";
+import { memo } from "react";
 
 
 type GetProjectType = {
@@ -17,12 +18,10 @@ type GetProjectType = {
     startDate: string
 }
 
-export default function AllProjectDetail() {
-    const { getProject } = useProject()
-    const { filterDate, setFilterData } = useUiProject2()
+const AllProjectDetail = memo(function AllProjectDetail() {
+    const { getProject, filterDate } = useProject()
     const filterProject = getProject.filter((elem: GetProjectType) => elem.status.toLowerCase().includes(filterDate.toLowerCase()))
-
-
+    
     return (
         <div className=" px-6 pt-3 bg-[#11131D] pb-5">
             <div className=" w-full border bg-[#171A26] border-[#252938] hover:border-blue-500/40 transition-all duration-300  rounded-lg">
@@ -66,4 +65,6 @@ export default function AllProjectDetail() {
             </div>
         </div>
     )
-}
+})
+
+export default AllProjectDetail

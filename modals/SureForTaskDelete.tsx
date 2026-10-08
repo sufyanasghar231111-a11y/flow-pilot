@@ -32,7 +32,11 @@ export default function SureForTaskDelete() {
                                 >
                                     Cancel
                                 </button>
-                                <button onClick={() => { deleteTask(singleTaskData?.id) }}
+                                <button onClick={() => {
+                                    if (!singleTaskData?.id) return
+
+                                    deleteTask(singleTaskData?.id)
+                                }}
                                     className="flex-1 py-2 rounded-lg text-sm text-white bg-red-500 hover:bg-red-600 transition-colors"
                                 >
                                     Delete

@@ -1,6 +1,7 @@
 import { Priority, TaskStatus } from "@/app/generated/prisma/enums";
 import { getAuthUser } from "@/libs/auth/auth";
 import prisma from "@/libs/db";
+import { AppError } from "@/utils/AppError";
 import { NextRequest } from "next/server";
 
 
@@ -95,13 +96,13 @@ export class taskService {
 
         const find = await prisma.user.findUnique(
             {
-                where:{
-                    id:createdByAdmin.userId
+                where: {
+                    id: createdByAdmin.userId
                 }
             }
         )
 
-        if(!find){
+        if (!find) {
             throw new Error('Only admin can get')
         }
 
@@ -225,30 +226,60 @@ export class taskService {
 
     }
 
-    static async countTask() {
+    static async countTask(request: NextRequest) {
 
-        const [completedTask, pendingTask, activeTask] = await Promise.all([
+        const admin = await getAuthUser(request)
+
+        const find = await prisma.user.findFirst(
+            {
+                where: {
+                    id: admin.userId
+                }
+            }
+        )
+
+        if (!find) {
+            throw new AppError('Only admin can count', 403)
+        }
+
+        const [completedTask, pendingTask, activeTask, overDue] = await Promise.all([
             prisma.task.count(
                 {
                     where: {
-                        status: 'DONE'
+                        status: 'DONE',
+                        createdById: admin.userId
                     }
                 }
             ),
             prisma.task.count(
                 {
                     where: {
-                        status: 'TODO'
+                        status: 'TODO',
+                        createdById: admin.userId
                     }
                 }
             ),
             prisma.task.count(
                 {
                     where: {
-                        status: 'IN_PROGRESS'
+                        status: 'IN_PROGRESS',
+                        createdById: admin.userId
                     }
                 }
             ),
+            prisma.task.count(
+                {
+                    where: {
+                        createdById: admin.userId,
+                        dueDate: {
+                            lt: new Date()
+                        },
+                        status: {
+                            not: 'DONE',
+                        }
+                    }
+                }
+            )
         ])
 
         const newThisWeek = new Date()
@@ -264,7 +295,8 @@ export class taskService {
                     where: {
                         completedAt: {
                             gte: newThisWeek
-                        }
+                        },
+                        createdById: admin.userId
                     }
                 }
             )
@@ -274,14 +306,15 @@ export class taskService {
                     where: {
                         createdAt: {
                             gte: newThisWeek
-                        }
+                        },
+                        createdById: admin.userId
                     }
                 }
             )
         ])
 
 
-        return [completedTask, pendingTask, activeTask, newCompleted, newPending]
+        return [completedTask, pendingTask, activeTask, newCompleted, newPending, overDue]
     }
 
     static async updateTaskByStatus(taskid: string, status: TaskStatus, request: NextRequest) {

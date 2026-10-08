@@ -1,5 +1,5 @@
 "use client"
-import { useEventUi2 } from "@/contexts/eventcontext/EventContext";
+import { EventTypes, useEventUi2 } from "@/contexts/eventcontext/EventContext";
 import { format, isToday } from "date-fns";
 import CalendarEvent from "./CalendarEvent";
 
@@ -39,7 +39,7 @@ export default function CalendarDay({ day, data }: { day: Date }) {
             <div className={`text-sm px-4 ${isToday(day) ? 'text-blue-500' : ''} py-1 font-semibold mb-1`}>{format(day, "d")}</div>
 
             <div className="flex flex-col gap-2 min-w-0">
-                {dayEvent.slice(0, 1).map((elem) => {
+                {dayEvent.slice(0, 1).map((elem: EventTypes) => {
                     return (
                         <>
                             {elem.types === "event" && (

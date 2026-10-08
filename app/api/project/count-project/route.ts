@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
             newProject,
             newActiveTask,
             newCompleted,
-            newPending
-        ] = await projectService.getAllProjectStatus()
+            newPending,
+        ] = await projectService.getAllProjectStatus(request)
 
         return Response.json(
             {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
                 newProject,
                 newActiveTask,
                 newCompleted,
-                newPending
+                newPending,
             },
             {
                 status: 200

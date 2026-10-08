@@ -71,6 +71,8 @@ model Project {
   admin          User            @relation(fields: [adminId], references: [id])
   projectmembers ProjectMember[]
   tasks          Task[]
+
+  @@index([adminId])
 }
 
 model ProjectMember {

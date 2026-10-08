@@ -1,7 +1,7 @@
 "use client"
 
 import { Names } from "@/components/nameComponent/Names"
-import { useEvent, useEventUi, useEventUi2 } from "@/contexts/eventcontext/EventContext"
+import { EventTypes, useEvent, useEventUi, useEventUi2 } from "@/contexts/eventcontext/EventContext"
 import { TimeAgo } from "@/utils/TimeAgo"
 import { format } from "date-fns"
 
@@ -52,10 +52,10 @@ export default function ParticularEventModal() {
 
                             {dayData.length === 0 ? (
                                 <div className="py-8 text-center text-sm text-gray-500">
-                                    No events for this day
+                                    No events
                                 </div>
                             ) : (
-                                dayData.map((elem, index) => (
+                                dayData.map((elem, index: number) => (
 
                                     <div key={index}>
 

@@ -177,16 +177,22 @@ export class EventService {
         }
 
         const [totalEvent, totalProjectMeeting, totalDeadLine, totalPersonalMeeting] = await Promise.all([
-            prisma.event.count()
+            prisma.event.count(
+                {
+                    where: {
+                        adminId: admin.userId
+                    }
+                }
+            )
             ,
             prisma.event.count(
-                { where: { type: 'PROJECT_MEETING' } }
+                { where: { type: 'PROJECT_MEETING', adminId: admin.userId } }
             ),
             prisma.event.count(
-                { where: { type: 'DEADLINE' } }
+                { where: { type: 'DEADLINE', adminId: admin.userId } }
             ),
             prisma.event.count(
-                { where: { type: "PERSONAL_MEETING" } }
+                { where: { type: "PERSONAL_MEETING", adminId: admin.userId } }
             ),
         ])
 
@@ -205,7 +211,8 @@ export class EventService {
                         where: {
                             createdAt: {
                                 gte: newthisMonth
-                            }
+                            },
+                            adminId: admin.userId
                         }
                     }
                 ),
@@ -216,7 +223,8 @@ export class EventService {
                             createdAt: {
                                 gte: newthisMonth
                             },
-                            type: 'PROJECT_MEETING'
+                            type: 'PROJECT_MEETING',
+                            adminId: admin.userId
                         }
                     }
                 ),
@@ -226,7 +234,8 @@ export class EventService {
                             createdAt: {
                                 gte: newthisMonth
                             },
-                            type: "DEADLINE"
+                            type: "DEADLINE",
+                            adminId: admin.userId
                         }
                     }
                 ),
@@ -236,7 +245,8 @@ export class EventService {
                             createdAt: {
                                 gte: newthisMonth
                             },
-                            type: 'PERSONAL_MEETING'
+                            type: 'PERSONAL_MEETING',
+                            adminId: admin.userId
                         }
                     }
                 ),

@@ -2,17 +2,18 @@ import { RiAddFill, RiDeleteBin5Line, RiEdit2Fill } from "@remixicon/react";
 import { Names } from "@/components/nameComponent/Names";
 import { TimeAgo } from "@/utils/TimeAgo";
 import { useProject } from "@/hooks/useProject";
-import { useProjectUi1, useUpdateProject } from "@/contexts/projectContext/ProjectContext";
+import { useProjectDelete, useProjectUi1, useUpdateProject } from "@/contexts/projectContext/ProjectContext";
 import { userType } from "@/types/usertype";
+import { format } from "date-fns";
 
 
 
 type Member = {
-    user:userType
+    user: userType
 }
 
-type User ={
-    user:Member
+type User = {
+    user: Member
 }
 
 type ElemType = {
@@ -38,10 +39,13 @@ type PropType = {
 export default function ProjectMainDetail({ index, elem, progressBar, totalTask, completeTask }: PropType) {
     const { getSingleProject } = useProject()
     const { setUpdateProjectModal } = useUpdateProject()
-    const { setAddMemberModal, setProjectDeleteModal } = useProjectUi1()
+    const { setAddMemberModal } = useProjectUi1()
+    const { setProjectDeleteModal } = useProjectDelete()
+
+    const overDue = (format(elem.deadline, 'yyyy-MM-dd') < format(new Date(), 'yyyy-MM-dd')) && elem.status !== 'COMPLETE'
 
     return (
-        <div key={elem.id} className="min-h-14 grid grid-cols-[0.5fr_2fr_3fr_1.2fr_1.3fr_1.3fr_1.6fr_1fr_2.4fr_1fr] items-center border-b border-[#252938] px-4 text-sm text-gray-300">
+        <div key={elem.id} className={`min-h-14 grid grid-cols-[0.5fr_2fr_3fr_1.2fr_1.3fr_1.3fr_1.6fr_1fr_2.4fr_1fr] items-center border-b border-[#252938]  px-4 text-sm text-gray-300`}>
 
             <div className="text-gray-500">
                 {index + 1}
@@ -56,9 +60,11 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
             </div>
 
             <div>
-                <span className={`inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 ${elem.status === 'CANCELLED' && 'bg-red-500/10 text-red-400'} ${elem.status === 'COMPLETE' && 'bg-green-500/10 text-green-400'} ${elem.status === 'PENDING' && 'bg-yellow-500/10 text-yellow-400'}  px-2.5 py-1 text-[10px] font-medium text-blue-400`}>
-                    <span className={`h-1.5 w-1.5 ${elem.status === 'CANCELLED' && 'bg-red-400'} ${elem.status === 'COMPLETE' && 'bg-green-400'} ${elem.status === 'PENDING' && 'bg-yellow-400'} rounded-full bg-blue-400`}></span>
-                    {elem.status}
+                <span className={`inline-flex items-center gap-1.5 ${overDue && 'bg-red-500/10 text-red-400'} rounded-full bg-blue-500/10 ${elem.status === 'CANCELLED' && 'bg-red-500/10 text-red-400'} ${elem.status === 'COMPLETE' && 'bg-green-500/10 text-green-400'} ${elem.status === 'PENDING' && 'bg-yellow-500/10 text-yellow-400'}  px-2.5 py-1 text-[10px] font-medium text-blue-400`}>
+                    <span className={`h-1.5 w-1.5 ${overDue && 'bg-red-400'} ${elem.status === 'CANCELLED' && 'bg-red-400'} ${elem.status === 'COMPLETE' && 'bg-green-400'} ${elem.status === 'PENDING' && 'bg-yellow-400'} rounded-full bg-blue-400`}></span>
+                    {
+                        overDue ? ("OVERDUE") : (<>{elem.status}</>)
+                    }
                 </span>
             </div>
 

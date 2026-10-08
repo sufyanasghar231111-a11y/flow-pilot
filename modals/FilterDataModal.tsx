@@ -1,13 +1,15 @@
 import { useUiProject2 } from "@/contexts/projectContext/ProjectContext";
+import { useProject } from "@/hooks/useProject";
 import { RiCloseFill } from "@remixicon/react";
 
 export function FilterDataModel() {
     const {
         filterModal,
         setFilterModal,
-        filterDate,
         setFilterData,
     } = useUiProject2();
+
+    const { filterDate } = useProject()
 
     const handleFilter = (status: string) => {
         setFilterData(status);

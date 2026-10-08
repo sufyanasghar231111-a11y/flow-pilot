@@ -1,6 +1,7 @@
 import { jwtVerify } from "jose"
 import { NextRequest } from "next/server"
 import prisma from "../db"
+import { AppError } from "@/utils/AppError"
 
 type AuthUser = {
     userId: string,
@@ -53,14 +54,14 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser> {
         )
 
         if (!session || session.userId !== payload.userId || session.revoke) {
-            throw new Error("Invalid access token")
+            throw new AppError("Invalid access token", 401)
         }
 
         return payload
 
     }
     catch {
-        throw new Error('Invalid access token')
+        throw new AppError('Invalid access token', 401)
     }
 
 }

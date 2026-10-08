@@ -1,11 +1,11 @@
 import { useProjectUi1 } from "@/contexts/projectContext/ProjectContext";
-import { useProject } from "@/hooks/useProject";
+import { useProject, useProjectStat } from "@/hooks/useProject";
 import { RiArrowLeftSLine, RiArrowRightSLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 
 export default function ProjectSelectionPagination() {
     const { getProject } = useProject()
-    const { projectStats } = useProject()
+    const { projectStats } = useProjectStat()
     const { projectPage } = useProjectUi1()
     const total = Math.ceil(projectStats.totalCounts / 8)
     const router = useRouter()

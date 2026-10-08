@@ -1,7 +1,8 @@
 import { RiArrowUpLine } from "@remixicon/react"
 import ProjectData from "./ProjectData"
+import React from "react"
 
-export default function AllProjectStat() {
+  const AllProjectStat = React.memo(function AllProjectStat() {
     const projectData = ProjectData()
     return (
         <div className="pt-4 px-5">
@@ -45,4 +46,6 @@ export default function AllProjectStat() {
             </div>
         </div>
     )
-}
+})
+
+export default AllProjectStat

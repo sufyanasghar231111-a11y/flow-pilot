@@ -3,7 +3,10 @@ import { useTaskUi2 } from "@/contexts/taskContext/TaskContext"
 import { useTask } from "@/hooks/useTask"
 import { RiDeleteBinLine, RiEditLine } from "@remixicon/react"
 
-export default function TaskDetail({ elem }) {
+type PropDate = {
+    id: string
+}
+export default function TaskDetail({ elem }: { elem: PropDate }) {
     const { taskDetailModal, setTaskDetailModal, setTaskDeletionModal, setTaskUpdateModal } = useTaskUi2()
     const { singleTaskById } = useTask()
 

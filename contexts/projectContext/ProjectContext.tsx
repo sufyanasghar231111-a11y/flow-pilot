@@ -2,27 +2,21 @@
 
 import { deleteProjectApi, getProjectApi, projectCreationApi, singleProject, totalCount, updateProjectApi } from "@/services/Frontend/projectApi";
 import { tryCatch } from "@/utils/tryCatch";
-import React, { ReactNode, useEffect, useState, createContext, useContext } from "react";
+import React, { ReactNode, useEffect, useState, createContext, useContext, useMemo, useCallback } from "react";
 import { useLogin } from "../authContext/AuthContext";
-import { ProjectStatsType, ProjectStatType, ProjectType, UpdatePropType } from "@/types/projectType";
+import { ProjectStatsType, ProjectStatType, ProjectValue, UpdatePropType } from "@/types/projectType";
 import { useSearchParams } from "next/navigation";
-import { userType } from "@/types/usertype";
 
 
 type UiType1 = {
-    projectCreationModal: boolean
-    setProjectCreationModal: React.Dispatch<React.SetStateAction<boolean>>;
     addMemberModal: boolean;
     setAddMemberModal: React.Dispatch<React.SetStateAction<boolean>>;
-    projectDeleteModal: boolean;
-    setProjectDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
     projectPage: number;
 }
 
 type UiType2 = {
     filterModal: boolean
     setFilterModal: React.Dispatch<React.SetStateAction<boolean>>;
-    filterDate: string
     setFilterData: React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -32,15 +26,38 @@ type UpdateProjectType = {
     update: UpdatePropType
     updateProjectModal: boolean
     setUpdateProjectModal: React.Dispatch<React.SetStateAction<boolean>>;
-    deleteProject: (id: string) => void
 }
 
+type ProjectModal = {
+    projectCreationModal: boolean
+    setProjectCreationModal: React.Dispatch<React.SetStateAction<boolean>>;
+    ProjectCreation: (e: { preventDefault: () => void; }) => void;
+}
 
+type ProjectCreationInputType = {
+    project: ProjectStatType;
+    setProject: React.Dispatch<React.SetStateAction<ProjectStatType>>;
+    handleProjectChange: (e: { target: { name: string; value: string; }; }) => void;
+}
 
-export const projectProvider = createContext<ProjectType | null>(null)
+type StatsProvider = {
+    projectStats: ProjectStatsType
+}
+
+type DeleteModalType = {
+    deleteProject: (id: string) => void
+    projectDeleteModal: boolean;
+    setProjectDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export const projectProvider = createContext<ProjectValue | null>(null)
 export const UiProjectProvider1 = createContext<UiType1 | null>(null)
 export const updateProjectProvider = createContext<UpdateProjectType | null>(null)
 export const UiProjectProvider2 = createContext<UiType2 | null>(null)
+const projectModalProvider = createContext<ProjectModal | null>(null)
+export const projectCreationInput = createContext<ProjectCreationInputType | null>(null)
+export const projectStatProvider = createContext<StatsProvider | null>(null)
+export const projectDeleteProvider = createContext<DeleteModalType | null>(null)
 
 export default function ProjectContext({ children }: { children: ReactNode }) {
 
@@ -92,7 +109,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     const searchParams = useSearchParams()
     const projectPage = Number(searchParams.get('page')) || 1
 
-    function handleProjectChange(e: { target: { name: string; value: string; }; }) {
+    const handleProjectChange = useCallback((e: { target: { name: string; value: string; }; }) => {
         setProject(
             prev => (
                 {
@@ -101,7 +118,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
                 }
             )
         )
-    }
+    }, [])
 
     async function getAllStatus() {
         const [res, error] = await tryCatch(totalCount())
@@ -133,7 +150,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
 
     }, [authReady])
 
-    async function getAllProject() {
+    const getAllProject = useCallback(async () => {
         const [res, error] = await tryCatch(getProjectApi(projectPage))
 
         if (error) {
@@ -142,8 +159,8 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         }
 
         setGetProject(res?.data.findProject)
-        
-    }
+
+    }, [projectPage])
 
     useEffect(() => {
         if (!authReady) return
@@ -152,7 +169,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authReady, projectPage])
 
-    async function ProjectCreation(e: { preventDefault: () => void; }) {
+    const ProjectCreation = useCallback(async (e: { preventDefault: () => void; }) => {
         e.preventDefault()
         const [res, error] = await tryCatch(projectCreationApi(
             {
@@ -169,9 +186,9 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
 
         await getAllProject()
         setProjectCreationModal(false)
-    }
+    }, [getAllProject, project.deadline, project.description, project.name, project.startDate])
 
-    async function getSingleProject(id: string) {
+    const getSingleProject = useCallback(async (id: string) => {
         if (!id) return
 
         const [res, error] = await tryCatch(singleProject(id))
@@ -182,7 +199,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         }
 
         setSingleProjectData(res?.data.singleProject)
-    }
+    }, [])
 
     useEffect(() => {
         if (!authReady) return
@@ -190,16 +207,16 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         getSingleProject()
     }, [authReady])
 
-    function handleUpdate(e: { target: { name: string; value: string; }; }) {
+    const handleUpdate = useCallback((e: { target: { name: string; value: string; }; }) => {
         setUpdate(
             prev => ({
                 ...prev,
                 [e.target.name]: e.target.value
             })
         )
-    }
+    }, [])
 
-    async function updateProject(id: string) {
+    const updateProject = useCallback(async (id: string) => {
 
         const [res, error] = await tryCatch(updateProjectApi(id,
             {
@@ -217,7 +234,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
 
         await getAllProject()
         setUpdateProjectModal(false)
-    }
+    }, [getAllProject, update.deadline, update.description, update.name, update.startDate, update.status])
 
     useEffect(() => {
         if (!singleProjectData) return
@@ -233,7 +250,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         )
     }, [singleProjectData])
 
-    async function deleteProject(id: string) {
+    const deleteProject = useCallback(async (id: string) => {
         const [res, error] = await tryCatch(deleteProjectApi(id))
 
         if (error) {
@@ -242,18 +259,63 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         }
         await getAllProject()
         setProjectDeleteModal(false)
-    }
+    }, [getAllProject])
+
+
+
+    const projectValue = useMemo(() => ({
+        getProject, getAllProject, singleProjectData, getSingleProject, filterDate
+    }), [getAllProject, getProject, singleProjectData, getSingleProject, filterDate])
+
+    const StatsProvider = useMemo(() => ({
+        projectStats
+    }), [projectStats])
+
+    const ProjectModal = useMemo(() => ({
+        projectCreationModal, setProjectCreationModal, ProjectCreation
+    }), [projectCreationModal, setProjectCreationModal, ProjectCreation])
+
+    const UiType2 = useMemo(() => ({
+        filterModal, setFilterModal, setFilterData
+    }), [filterModal, setFilterModal, setFilterData])
+
+    const ProjectCreationInputType = useMemo(() => ({
+        handleProjectChange, project, setProject
+    }), [handleProjectChange, project, setProject])
+
+    const UpdateProjectType = useMemo(() => ({
+        handleUpdate, updateProject, update, updateProjectModal, setUpdateProjectModal
+    }), [handleUpdate, updateProject, update, updateProjectModal, setUpdateProjectModal])
+
+
+    const UiType1 = useMemo(() => ({
+        addMemberModal, setAddMemberModal, projectPage
+    }), [addMemberModal, setAddMemberModal, projectPage])
+
+    const DeleteModalType = useMemo(() => ({
+        projectDeleteModal, setProjectDeleteModal, deleteProject
+    }), [projectDeleteModal, setProjectDeleteModal, deleteProject])
+
+
 
     return (
-        <projectProvider.Provider value={{ projectStats, getProject, handleProjectChange, project, setProject, ProjectCreation, getAllProject, singleProjectData, getSingleProject }}>
-            <UiProjectProvider1 value={{ projectCreationModal, setProjectCreationModal, addMemberModal, setAddMemberModal, projectDeleteModal, setProjectDeleteModal, projectPage }}>
-                <updateProjectProvider.Provider value={{ handleUpdate, updateProject, update, updateProjectModal, setUpdateProjectModal, deleteProject }}>
-                    <UiProjectProvider2.Provider value={{ filterModal, setFilterModal, filterDate, setFilterData }}>
-                        {children}
-                    </UiProjectProvider2.Provider>
-                </updateProjectProvider.Provider>
-            </UiProjectProvider1>
-        </projectProvider.Provider>
+        <projectStatProvider.Provider value={StatsProvider}>
+            <projectProvider.Provider value={projectValue}>
+                <UiProjectProvider1 value={UiType1}>
+                    <updateProjectProvider.Provider value={UpdateProjectType}>
+                        <UiProjectProvider2.Provider value={UiType2}>
+                            <projectModalProvider.Provider value={ProjectModal}>
+                                <projectCreationInput.Provider value={ProjectCreationInputType}>
+                                    <projectDeleteProvider.Provider value={DeleteModalType}>
+                                        {children}
+                                    </projectDeleteProvider.Provider>
+                                </projectCreationInput.Provider>
+                            </projectModalProvider.Provider>
+                        </UiProjectProvider2.Provider>
+                    </updateProjectProvider.Provider>
+                </UiProjectProvider1>
+            </projectProvider.Provider>
+        </projectStatProvider.Provider>
     )
 }
 
@@ -281,5 +343,24 @@ export function useUiProject2() {
     if (!context) {
         throw new Error('Ui 2 must be inside useUiProject2')
     }
+    return context
+}
+
+export function useProjectModal() {
+    const context = useContext(projectModalProvider)
+
+    if (!context) {
+        throw new Error('useProjectModal must be inside projectModalProvider')
+    }
+    return context
+}
+
+export function useProjectDelete() {
+    const context = useContext(projectDeleteProvider)
+
+    if (!context) {
+        throw new Error('projectDeleteProvider must be inside useProjectDelete')
+    }
+
     return context
 }

@@ -1,3 +1,4 @@
+import { TaskState } from "@/contexts/taskContext/TaskContext";
 
 export type ProjectStatsType = {
     totalCounts: number;
@@ -8,7 +9,7 @@ export type ProjectStatsType = {
     newProject: number;
     newActiveTask: number;
     newCompleted: number;
-    newPending: number
+    newPending: number;
 }
 
 
@@ -21,6 +22,7 @@ export type ProjectStatType = {
 
 
 export type UpdatePropType = {
+
     id?: string,
     name: string;
     description: string;
@@ -31,20 +33,19 @@ export type UpdatePropType = {
         id: string
         user: {
             user: {
+                username: string;
                 id: string
             }
         }
     }[]
+    tasks?: TaskState[];
+    length?: number;
 }
 
-export type ProjectType = {
-    projectStats: ProjectStatsType;
+export type ProjectValue = {
     getProject: [];
-    handleProjectChange: (e: { target: { name: string; value: string; }; }) => void;
-    project: ProjectStatType;
-    setProject: React.Dispatch<React.SetStateAction<ProjectStatType>>;
-    ProjectCreation: (e: { preventDefault: () => void; }) => void;
     getAllProject: () => void;
     singleProjectData: UpdatePropType | null;
     getSingleProject: (id: string) => void;
+    filterDate: string
 }

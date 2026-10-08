@@ -135,7 +135,7 @@ export default function TaskCreationModal() {
                                 >
                                     <option>Select A Member</option>
                                     {
-                                        singleProjectData?.projectmembers.map((elem) => {
+                                        singleProjectData?.projectmembers?.map((elem) => {
                                             
                                             return <option value={elem.user.user.id} key={elem.user.user.id} >
                                                 {elem.user.user.username}
@@ -155,6 +155,7 @@ export default function TaskCreationModal() {
 
                                 <button
                                     onClick={() => {
+                                        if(!singleProjectData?.id) return
                                         taskCreation(singleProjectData?.id)
                                     }}
                                     className="rounded-md bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-500"

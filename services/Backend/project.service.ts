@@ -156,7 +156,8 @@ export const projectService = {
         const updateProject = await prisma.project.update(
             {
                 where: {
-                    id: id
+                    id: id,
+                    adminId: admin.userId
                 },
                 data: {
                     ...(name !== undefined && { name }),
@@ -187,15 +188,15 @@ export const projectService = {
         return deleteProject
     },
 
-    async getAllProjectStatus() {
+    async getAllProjectStatus(request: NextRequest) {
+
+        const admin = await getAuthUser(request)
 
         const [totalCount, totalActive, totalComplete, totalPending, totalCancelled] = await Promise.all([
-            prisma.project.count(),
-
             prisma.project.count(
                 {
                     where: {
-                        status: 'ACTIVE'
+                        adminId: admin.userId
                     }
                 }
             ),
@@ -203,7 +204,8 @@ export const projectService = {
             prisma.project.count(
                 {
                     where: {
-                        status: 'COMPLETE'
+                        status: 'ACTIVE',
+                        adminId: admin.userId
                     }
                 }
             ),
@@ -211,7 +213,8 @@ export const projectService = {
             prisma.project.count(
                 {
                     where: {
-                        status: 'PENDING'
+                        status: 'COMPLETE',
+                        adminId: admin.userId
                     }
                 }
             ),
@@ -219,10 +222,20 @@ export const projectService = {
             prisma.project.count(
                 {
                     where: {
-                        status: 'CANCELLED'
+                        status: 'PENDING',
+                        adminId: admin.userId
                     }
                 }
             ),
+
+            prisma.project.count(
+                {
+                    where: {
+                        status: 'CANCELLED',
+                        adminId: admin.userId
+                    }
+                }
+            )
 
         ])
         const now = new Date()
@@ -238,7 +251,8 @@ export const projectService = {
                     where: {
                         createdAt: {
                             gte: startOfMonth
-                        }
+                        },
+                        adminId: admin.userId
                     }
                 }
             ),
@@ -248,7 +262,8 @@ export const projectService = {
                     status: "ACTIVE",
                     createdAt: {
                         gte: startOfMonth
-                    }
+                    },
+                    adminId: admin.userId
                 }
             }
             ),
@@ -259,7 +274,8 @@ export const projectService = {
                         status: 'COMPLETE',
                         completedAt: {
                             gte: startOfMonth
-                        }
+                        },
+                        adminId: admin.userId
                     }
                 }
             ),
@@ -269,7 +285,8 @@ export const projectService = {
                         status: 'PENDING',
                         createdAt: {
                             gte: startOfMonth
-                        }
+                        },
+                        adminId: admin.userId
                     }
                 }
             ),

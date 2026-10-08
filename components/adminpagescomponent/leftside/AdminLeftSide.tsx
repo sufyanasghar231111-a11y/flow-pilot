@@ -4,10 +4,12 @@ import logo3 from '@/assets/icons/logo3.png'
 import { RiCalendarLine, RiCalendarTodoFill, RiDashboardLine, RiFolderChartFill, RiKanbanView, RiLineChartLine, RiLogoutBoxRLine, RiNotification4Line, RiSettings2Fill, RiTeamLine } from "@remixicon/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useLogout } from "@/contexts/authContext/AuthContext";
 
 export default function AdminLeftSide() {
 
     const pathname = usePathname();
+    const { handleLogout } = useLogout()
 
     const routeLink = [
         {
@@ -77,7 +79,7 @@ export default function AdminLeftSide() {
                             pathname === elem.link || pathname.startsWith(`${elem.link}/`)
                         return <div key={index}>
                             <Link href={elem.link}>
-                                <div  className={`flex items-center gap-4 px-6 py-2.5 ${isActive ? 'bg-[#5B6EF5]/15 text-white border border-[#5B6EF5]/30' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}  rounded-md`}>
+                                <div className={`flex items-center gap-4 px-6 py-2.5 ${isActive ? 'bg-[#5B6EF5]/15 text-white border border-[#5B6EF5]/30' : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'}  rounded-md`}>
                                     <div>
                                         <Icon className="w-5.5 h-5.5" />
                                     </div>
@@ -89,7 +91,7 @@ export default function AdminLeftSide() {
                 }
 
                 <footer className="">
-                    <button type="button" className="w-full flex items-center gap-5 px-5.5 py-2.5 text-[15px] text-gray-400 hover:bg-white/5 hover:text-white border border-transparent rounded-md transition-colors">
+                    <button onClick={() => { handleLogout() }} type="button" className="w-full flex items-center gap-5 px-5.5 py-2.5 text-[15px] text-gray-400 hover:bg-white/5 hover:text-white border border-transparent rounded-md transition-colors">
                         <RiLogoutBoxRLine className="w-5 h-5 " /> <h1>Logout</h1>
                     </button>
                 </footer>

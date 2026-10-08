@@ -1,10 +1,10 @@
 "use client"
-import { useProjectUi1 } from "@/contexts/projectContext/ProjectContext"
-import { useProject } from "@/hooks/useProject"
+import { useProjectModal } from "@/contexts/projectContext/ProjectContext"
+import { useCreationInput } from "@/hooks/useProject"
 
 export default function ProjectCreationModal() {
-    const { projectCreationModal, setProjectCreationModal } = useProjectUi1()
-    const { project, handleProjectChange, ProjectCreation } = useProject()
+    const { projectCreationModal, setProjectCreationModal, ProjectCreation } = useProjectModal()
+    const { project, handleProjectChange } = useCreationInput()
     return (
         <>
             {

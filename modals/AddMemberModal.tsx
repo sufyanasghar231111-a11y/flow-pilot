@@ -83,6 +83,7 @@ export default function AddMemberModal() {
                                             onClick={() => {
 
                                                 if (!singleProjectData?.id) return
+
                                                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
                                                 find
                                                     ? removeMember(singleProjectData?.id, user.id)
