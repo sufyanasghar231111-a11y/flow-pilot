@@ -10,7 +10,7 @@ export default function ProjectDonut({ data, total }:{data:Segment[], total:numb
         <>
             <ResponsiveContainer width='100%' height='100%'>
                 <PieChart>
-                    <Pie data={data} dataKey='value' nameKey='label' innerRadius='65%' outerRadius='88%' startAngle={90} endAngle={-270}>
+                    <Pie data={data} dataKey='value' nameKey='label' innerRadius='62%' outerRadius='85%' paddingAngle={3} >
                         {data.map((d, i) => (
                             <Cell
                                 key={i}

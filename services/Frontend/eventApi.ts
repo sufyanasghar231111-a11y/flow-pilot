@@ -5,8 +5,14 @@ export const countEventStats = () => {
     return api.get('/events/count-event')
 }
 
-export const getAllEvent = () => {
-    return api.get('/events/get-event')
+export const getAllEvent = (type: string, eventendDate: string, eventstartDate: string) => {
+    return api.get('/events/get-event', {
+        params: {
+            eventtype:type,
+            startdate:eventendDate,
+            enddate:eventstartDate
+        }
+    })
 }
 
 export const getSingleEventApi = (eventid: string) => {

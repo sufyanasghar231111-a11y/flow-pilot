@@ -1,9 +1,10 @@
 "use client"
 import { countApi, deleteTaskApi, getAllTaskApi, singleTaskApi, taskCreationApi, updateSingleTaskApi, updateTaskApi } from "@/services/Frontend/taskApi";
 import { tryCatch } from "@/utils/tryCatch";
-import React, { createContext, useState, ReactNode, useEffect, useContext } from "react";
+import React, { createContext, useState, ReactNode, useEffect, useContext, useRef, RefObject } from "react";
 import { useLogin } from "../authContext/AuthContext";
 import { useProject } from "@/hooks/useProject";
+import { useAppSelector } from "@/hooks/reduxhooks";
 
 
 type TaskStatsType = {
@@ -37,11 +38,13 @@ export type TaskState = {
     id?: string,
     name: string
     description: string
-    priority: string
+    priority: string,
     dueDate: string;
     assignedToId: string,
     status?: Status,
-    assignedTo?: AssignedData
+    assignedTo?: AssignedData,
+    completedAt?: string
+
 }
 
 type TaskContextype = {
@@ -58,6 +61,7 @@ type TaskContextype = {
     singleTaskById: (taskid: string) => void;
     deleteTask: (taskid: string) => void;
     updateTask: (taskid: string) => void;
+    getAllTask: () => void;
 }
 
 
@@ -80,9 +84,35 @@ type TaskUiContextType2 = {
     setTaskUpdateModal: React.Dispatch<React.SetStateAction<boolean>>
 }
 
+type ReportState = {
+    totalTask: number,
+    totalDone: number,
+    totalTodo: number,
+    totalReview: number,
+    totalInProgress: number,
+    totalDonePercentage: number,
+    totalTodoPercentage: number,
+    totalReviewPercentage: number,
+    totalInProgressPercentage: number,
+
+    totalHigh: number,
+    totalMedium: number,
+    totalLow: number,
+    totalHighPercentage: number,
+    totalMediumPercentage: number,
+    totalLowPercentage: number
+}
+
+type TaskReport = {
+    taskReport: ReportState;
+    handlePdf: (data: string) => void;
+    printRef: RefObject<HTMLDivElement | null>
+}
+
 export const taskContext = createContext<TaskContextype | null>(null)
 export const taskUiContext1 = createContext<TaskUiContextType1 | null>(null)
 const taskUiContext2 = createContext<TaskUiContextType2 | null>(null)
+export const reportTaskProvider = createContext<TaskReport | null>(null)
 
 export default function TaskContext({ children }: { children: ReactNode }) {
 
@@ -122,6 +152,26 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     const [taskDeletionModal, setTaskDeletionModal] = useState<boolean>(false)
     const [singleTaskData, setSingleTaskData] = useState<TaskState | null>(null)
     const [taskUpdateModal, setTaskUpdateModal] = useState<boolean>(false)
+    const [taskReport, setTaskReport] = useState<ReportState>(
+        {
+            totalTask: 0,
+            totalDone: 0,
+            totalTodo: 0,
+            totalReview: 0,
+            totalInProgress: 0,
+            totalDonePercentage: 0,
+            totalTodoPercentage: 0,
+            totalReviewPercentage: 0,
+            totalInProgressPercentage: 0,
+            totalHigh: 0,
+            totalMedium: 0,
+            totalLow: 0,
+            totalHighPercentage: 0,
+            totalMediumPercentage: 0,
+            totalLowPercentage: 0
+        }
+    )
+    const { priority, taskStatus, endTaskDate, startTaskDate } = useAppSelector((state) => state.filterTask)
 
     async function countTaskStats() {
         const [res, error] = await tryCatch(countApi())
@@ -166,13 +216,31 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     }
 
     async function getAllTask() {
-        const [res, error] = await tryCatch(getAllTaskApi())
+        const [res, error] = await tryCatch(getAllTaskApi(taskStatus, priority, startTaskDate, endTaskDate))
 
         if (error) {
             console.log(error);
         }
 
         setGetTask(res?.data.getTasks)
+        setTaskReport({
+            totalTask: res?.data.totalTask,
+            totalDone: res?.data.totalDone,
+            totalTodo: res?.data.totalTodo,
+            totalReview: res?.data.totalReview,
+            totalInProgress: res?.data.totalInProgress,
+            totalDonePercentage: res?.data.totalDonePercentage,
+            totalTodoPercentage: res?.data.totalTodoPercentage,
+            totalReviewPercentage: res?.data.totalReviewPercentage,
+            totalInProgressPercentage: res?.data.totalInProgressPercentage,
+
+            totalHigh: res?.data.totalHigh,
+            totalMedium: res?.data.totalMedium,
+            totalLow: res?.data.totalLow,
+            totalHighPercentage: res?.data.totalHighPercentage,
+            totalMediumPercentage: res?.data.totalMediumPercentage,
+            totalLowPercentage: res?.data.totalLowPercentage
+        })
     }
 
     useEffect(() => {
@@ -180,7 +248,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllTask()
 
-    }, [authReady])
+    }, [authReady, taskStatus, priority, startTaskDate, endTaskDate])
 
     async function taskCreation(projectId: string) {
         const [res, error] = await tryCatch(taskCreationApi(projectId,
@@ -279,11 +347,57 @@ export default function TaskContext({ children }: { children: ReactNode }) {
 
     }, [singleTaskData])
 
+    const printRef = useRef<HTMLDivElement>(null)
+
+    async function handlePdf(data: string) {
+        const element = printRef.current
+        if (!element) return
+
+        const html2canvas = (await import("html2canvas-pro")).default
+        const { default: jsPDF } = await import('jspdf')
+
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            backgroundColor: "#171A26",
+        })
+
+        const pdf = new jsPDF({
+            unit: "in",
+            format: "letter",
+            orientation: "landscape",
+        });
+
+        const margin = 0.4
+        const pageWidth = pdf.internal.pageSize.getWidth()
+        const pageHeight = pdf.internal.pageSize.getHeight()
+        const imgWidth = pageWidth - margin * 2;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        const image = canvas.toDataURL("image/jpeg", 0.98)
+        let remainingHeight = imgHeight
+        let position = margin
+
+        pdf.addImage(image, 'JPEG', margin, position, imgWidth, imgHeight)
+        remainingHeight -= pageHeight - margin * 2
+
+        while (remainingHeight > 0) {
+            position = margin - (imgHeight - (imgHeight - remainingHeight))
+            pdf.addPage();
+            pdf.addImage(image, 'JPEG', margin, position, imgWidth, imgHeight)
+            remainingHeight -= pageHeight - margin * 2
+        }
+
+        pdf.save(`flowpilot-${data}-report.pdf`)
+
+    }
+
     return (
-        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange }}>
+        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange, getAllTask }}>
             <taskUiContext1.Provider value={{ projectSelectionModal, setProjectSelectionModal, taskCreationModal, setTaskCreationModal, warningModal, setWarningModal }}>
                 <taskUiContext2.Provider value={{ taskDetailModal, setTaskDetailModal, taskDeletionModal, setTaskDeletionModal, taskUpdateModal, setTaskUpdateModal }}>
-                    {children}
+                    <reportTaskProvider.Provider value={{ taskReport, handlePdf, printRef }}>
+                        {children}
+                    </reportTaskProvider.Provider>
                 </taskUiContext2.Provider>
             </taskUiContext1.Provider>
         </taskContext.Provider>
@@ -305,6 +419,14 @@ export function useTaskUi2() {
     const context = useContext(taskUiContext2)
     if (!context) {
         throw new Error('taskUiContext2 is must inside useTaskUi2')
+    }
+    return context
+}
+
+export function useTaskReport() {
+    const context = useContext(reportTaskProvider)
+    if (!context) {
+        throw new Error('useTaskReport is must inside reportTaskProvider')
     }
     return context
 }

@@ -6,6 +6,7 @@ import { useLogin } from "../authContext/AuthContext";
 import { EventType } from "@/app/generated/prisma/enums";
 import { userType } from "@/types/usertype";
 import { EventTypeState } from "@/types/eventType";
+import { useAppSelector } from "@/hooks/reduxhooks";
 
 interface EventInterface {
     totalEvent: number,
@@ -18,11 +19,8 @@ interface EventInterface {
     newPersonalMeeting: number
 }
 
-
-
-
 export type EventTypes = {
-    
+
     id?: string;
     name: string;
     date: string;
@@ -32,11 +30,12 @@ export type EventTypes = {
     eventMember?: {
         member: {
             user: {
-                id: string
+                id: string,
+                username: string
             }
         }
     }[];
-    types:'event' | 'project' | 'projects'
+    types: 'event' | 'project' | 'projects'
 }
 
 interface EventContext {
@@ -47,6 +46,7 @@ interface EventContext {
     updateEventMember: (eventid: string, userid: string) => void;
     removeEventMember: (eventid: string, userid: string) => void;
     createEvent: () => void;
+    getEvent: () => void
 }
 
 type EventUi1Type = {
@@ -71,10 +71,21 @@ type EventUi2Type = {
     setMinCalendarMonths: React.Dispatch<React.SetStateAction<Date>>;
 }
 
+type StateOfReport = {
+    totalEvent: number,
+    totalPersonalMeeting: number,
+    totalProjectMeeting: number,
+    totalDeadLine: number,
+}
+
+type EventReportData = {
+    eventReport: StateOfReport
+}
+
 export const eventContext = createContext<EventContext | null>(null)
 export const eventUi1 = createContext<EventUi1Type | null>(null)
 export const eventUi2 = createContext<EventUi2Type | null>(null)
-
+export const eventReportProvider = createContext<EventReportData | null>(null)
 export default function EventContext({ children }: { children: ReactNode }) {
 
     const [eventStat, setEventStats] = useState<EventInterface>({
@@ -118,6 +129,13 @@ export default function EventContext({ children }: { children: ReactNode }) {
     const [dayData, setDayData] = useState<EventType[]>([])
     const [dayDate, setDayDate] = useState<null | Date>(null)
     const [minCalendarMonths, setMinCalendarMonths] = useState<Date>(new Date())
+    const { type, eventendDate, eventstartDate } = useAppSelector((state) => state.filterEvent)
+    const [eventReport, setEventReport] = useState({
+        totalEvent: 0,
+        totalPersonalMeeting: 0,
+        totalProjectMeeting: 0,
+        totalDeadLine: 0,
+    })
 
     async function EventCount() {
         const [res, error] = await tryCatch(countEventStats())
@@ -146,13 +164,19 @@ export default function EventContext({ children }: { children: ReactNode }) {
 
 
     async function getEvent() {
-        const [res, error] = await tryCatch(getAllEvent())
+        const [res, error] = await tryCatch(getAllEvent(type, eventendDate, eventstartDate))
 
         if (error) {
             console.log(error);
             return
         }
         setEventData(res?.data.getEvent)
+        setEventReport({
+            totalEvent: res?.data.totalEvent,
+            totalPersonalMeeting: res?.data.totalPersonalMeeting,
+            totalProjectMeeting: res?.data.totalProjectMeeting,
+            totalDeadLine: res?.data.totalDeadLine,
+        })
     }
 
     useEffect(() => {
@@ -160,7 +184,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getEvent()
-    }, [authReady])
+    }, [authReady, type, eventendDate, eventstartDate])
 
     async function getSingleEvent(eventid: string) {
         if (!eventid) return
@@ -219,10 +243,12 @@ export default function EventContext({ children }: { children: ReactNode }) {
     }
 
     return (
-        <eventContext.Provider value={{ eventStat, eventData, singleEventData, getSingleEvent, updateEventMember, removeEventMember, createEvent }}>
+        <eventContext.Provider value={{ eventStat, eventData, singleEventData, getSingleEvent, updateEventMember, removeEventMember, createEvent, getEvent }}>
             <eventUi1.Provider value={{ addMemberModal, setAddMemberModal, event, eventCreationModal, setEvenCreationModal, handleEventChange, months, setMonths }}>
                 <eventUi2.Provider value={{ singleDayModal, setSingleDayModal, dayDate, setDayDate, dayData, setDayData, minCalendarMonths, setMinCalendarMonths }}>
-                    {children}
+                    <eventReportProvider.Provider value={{ eventReport }}>
+                        {children}
+                    </eventReportProvider.Provider>
                 </eventUi2.Provider>
             </eventUi1.Provider>
         </eventContext.Provider>
@@ -254,6 +280,15 @@ export function useEventUi2() {
 
     if (!context) {
         throw new Error("eventUi2 must inside useEventUi")
+    }
+    return context
+}
+
+export function useEventReport() {
+    const context = useContext(eventReportProvider)
+
+    if (!context) {
+        throw new Error("eventReportProvider must inside useEventReport")
     }
     return context
 }

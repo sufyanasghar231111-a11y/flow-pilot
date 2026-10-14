@@ -53,10 +53,30 @@ export class EventService {
             throw new Error("Only Admin Can Get")
         }
 
+        const { searchParams } = new URL(request.url)
+        const type = searchParams.get('eventtype')
+        const startDate = searchParams.get('startdate')
+        const endDate = searchParams.get('enddate')
+
         const getEvent = await prisma.event.findMany(
             {
                 where: {
-                    adminId: admin.userId
+                    adminId: admin.userId,
+                    ...(type && type !== 'All' ? {
+                        type: type as EventType
+                    } : {}),
+                    ...(startDate || endDate ? {
+                        createdAt: {
+                            ...(startDate ? {
+                                gte: new Date(startDate)
+                            } : {}),
+                            ...(endDate ? {
+                                lt: new Date(
+                                    new Date(endDate).getTime() + 24 * 60 * 60 * 1000
+                                )
+                            } : {})
+                        }
+                    } : {})
                 },
                 select: {
                     id: true,
@@ -85,7 +105,12 @@ export class EventService {
             }
         )
 
-        return getEvent
+        const totalEvent = getEvent.length
+        const totalPersonalMeeting = getEvent.filter(elem => elem.type === 'PERSONAL_MEETING').length
+        const totalProjectMeeting = getEvent.filter(elem => elem.type === 'PROJECT_MEETING').length
+        const totalDeadLine = getEvent.filter(elem => elem.type === 'DEADLINE').length
+
+        return { totalEvent, totalPersonalMeeting, totalProjectMeeting, totalDeadLine, getEvent }
     }
 
     static async createMember(eventid: string, userid: string, request: NextRequest) {

@@ -1,16 +1,19 @@
 "use client"
-import { RiDeleteBinLine, RiMoreLine } from "@remixicon/react";
+import { RiDeleteBinLine, RiMoreLine, RiTeamLine } from "@remixicon/react";
 import TeamDetailHeader from "./TeamDetailHeader";
 import { useTeam, useTeamUi1 } from "@/contexts/teamContext/TeamContext";
 import { TimeAgo } from "@/utils/TimeAgo";
 import { Names } from "@/components/nameComponent/Names";
 import { useState } from "react";
+import { useAppSelector } from "@/hooks/reduxhooks";
+import { currentMonth } from "../reports/TaskShowReport";
 
-export default function AllTeamDetail() {
+export default function AllTeamDetail({ page }: { page: string }) {
     const { memberData, removeTeamMember } = useTeam()
     const [searchInput, setSearchInput] = useState('')
     const filterDate = memberData?.member.filter(elem => elem.username.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))
     const { deleteMemberModal, setDeleteMemberModal } = useTeamUi1()
+    const { teamStartDate, teamEndDate } = useAppSelector((state) => state.filterTeam)
 
     function handleOpen(id: string) {
         setDeleteMemberModal(prev => prev === id ? null : id)
@@ -19,7 +22,26 @@ export default function AllTeamDetail() {
     return (
         <div className="px-5 pt-4 bg-[#11131D] py-3">
             <div className="w-full overflow-hidden rounded-xl border border-[#252938] bg-[#171A26] shadow-sm">
-                <TeamDetailHeader searchInput={searchInput} setSearchInput={setSearchInput} />
+                {
+                    page === 'page' && (
+                        <TeamDetailHeader searchInput={searchInput} setSearchInput={setSearchInput} />
+                    )
+                }
+                {
+                    page === 'prop' && (
+                        <div className="flex items-center gap-3 border-b border-[#252B3B] px-4 py-3">
+                            <RiTeamLine className="shrink-0 text-xl text-purple-600" />
+                            <div className="min-w-0">
+                                <h1 className="text-sm font-semibold text-gray-100">
+                                    Team Report
+                                </h1>
+                                <h1 className="mt-1 text-xs text-gray-400">
+                                    {teamStartDate || teamEndDate ? (<><TimeAgo time={teamStartDate} /> - <TimeAgo time={teamEndDate} /></>) : (<><TimeAgo time={currentMonth} /> - Onward</>)}
+                                </h1>
+                            </div>
+                        </div>
+                    )
+                }
 
                 <div className="mt-3 px-4 pb-4">
                     <div className="grid grid-cols-[2fr_2.5fr_1.5fr_2fr_1fr] items-center rounded-t-lg border border-[#252938] bg-[#1D202D] px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -88,13 +110,10 @@ export default function AllTeamDetail() {
                                             </div>
                                         )
                                     }
-
-
                                 </div>
                             </div>
                         })
                     }
-
                 </div>
             </div>
         </div>

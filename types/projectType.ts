@@ -43,7 +43,7 @@ export type UpdatePropType = {
 }
 
 export type ProjectValue = {
-    getProject: [];
+    getProject: UpdatePropType[];
     getAllProject: () => void;
     singleProjectData: UpdatePropType | null;
     getSingleProject: (id: string) => void;

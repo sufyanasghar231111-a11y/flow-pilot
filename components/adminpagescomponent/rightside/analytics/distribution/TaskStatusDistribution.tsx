@@ -9,7 +9,7 @@ export type Segment = {
 }
 
 
-export default function TaskStatusDistribution() {
+export default function TaskStatusDistribution({ elem }:{ elem: string}) {
 
     const { taskStats } = useTask()
 
@@ -23,11 +23,11 @@ export default function TaskStatusDistribution() {
     const total = data.reduce((acc, current) => {
         return acc + current.value
     }, 0)
-    
+
     return (
         <div className="w-[33%] border rounded-md border-[#252938] bg-[#171A26]">
             <div className="px-3 py-2">
-                <h1 className='text-sm font-semibold'>Task Status Distribution</h1>
+                <h1 className='text-sm font-semibold'>Task Status {elem}</h1>
                 <h1 className="text-xs text-gray-500">Current status of all Tasks.</h1>
             </div>
             <div className="flex items-center justify-between gap-3 px-1 py-4">

@@ -60,34 +60,88 @@ export class taskService {
     static async getTask(request: NextRequest) {
 
         const createdBy = await getAuthUser(request)
+        const { searchParams } = new URL(request.url)
+        const taskStatus = searchParams.get('taskstatus')
+        const priority = searchParams.get('priority')
+        const startDate = searchParams.get('startdate')
+        const endDate = searchParams.get('enddate')
 
-        const getTasks = await prisma.task.findMany(
-            {
-                where: {
-                    createdById: createdBy.userId,
-                },
-                include: {
-                    assignedTo: {
-                        select: {
-                            id: true,
-                            user: {
-                                select: {
-                                    id: true,
-                                    username: true,
-                                    email: true
+        const [getTasks, totalTask] = await Promise.all([
+            prisma.task.findMany(
+                {
+                    where: {
+                        createdById: createdBy.userId,
+                        ...(taskStatus && taskStatus !== 'All' ? { status: taskStatus as TaskStatus } : {}),
+                        ...(priority && priority !== 'All' ? { priority: priority as Priority } : {}),
+                        ...(startDate || endDate ? {
+                            createdAt: {
+                                ...(startDate ? {
+                                    gte: new Date(startDate)
+                                } : {}),
+
+                                ...(endDate ? {
+                                    lt: new Date(
+                                        new Date(endDate).getTime() + 24 * 60 * 60 * 1000
+                                    )
+                                } : {})
+                            }
+                        } : {})
+
+                    },
+                    include: {
+                        assignedTo: {
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        username: true,
+                                        email: true
+                                    }
                                 }
                             }
                         }
+                    },
+
+                    orderBy: {
+                        createdAt: 'desc'
                     }
-                },
-
-                orderBy: {
-                    createdAt: 'desc'
                 }
-            }
-        )
+            ),
+            prisma.task.count(
+                {
+                    where: {
+                        createdById: createdBy.userId
+                    }
+                }
+            )
+        ])
 
-        return getTasks
+        const totalDone = getTasks.filter(elem => elem.status === 'DONE').length
+        const totalTodo = getTasks.filter(elem => elem.status === 'TODO').length
+        const totalReview = getTasks.filter(elem => elem.status === 'REVIEW').length
+        const totalInProgress = getTasks.filter(elem => elem.status === 'IN_PROGRESS').length
+
+        const totalHigh = getTasks.filter(elem => elem.priority === 'HIGH').length
+        const totalMedium = getTasks.filter(elem => elem.priority === 'MEDIUM').length
+        const totalLow = getTasks.filter(elem => elem.priority === "LOW").length
+
+        const totalDonePercentage = Math.round((totalDone / getTasks.length) * 100)
+        const totalTodoPercentage = Math.round((totalTodo / getTasks.length) * 100)
+        const totalReviewPercentage = Math.round((totalReview / getTasks.length) * 100)
+        const totalInProgressPercentage = Math.round((totalInProgress / getTasks.length) * 100)
+
+        const totalHighPercentage = Math.round((totalHigh / getTasks.length) * 100)
+        const totalMediumPercentage = Math.round((totalMedium / getTasks.length) * 100)
+        const totalLowPercentage = Math.round((totalLow / getTasks.length) * 100)
+
+
+
+
+        return {
+            totalTask, totalDone, totalTodo, totalReview, totalInProgress, totalDonePercentage, totalTodoPercentage, totalReviewPercentage, totalInProgressPercentage, getTasks
+            , totalHigh, totalMedium, totalLow, totalHighPercentage, totalMediumPercentage, totalLowPercentage
+        }
     }
 
     static async getTaskById(projectid: string, request: NextRequest) {

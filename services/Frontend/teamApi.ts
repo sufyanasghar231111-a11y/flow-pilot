@@ -8,8 +8,13 @@ export const addMemberApi = (userid: string) => {
     return api.post(`/teams/add-member/${userid}`)
 }
 
-export const getMemberApi = () => {
-    return api.get(`/teams/get-member`)
+export const getMemberApi = (teamStartDate: string, teamEndDate: string) => {
+    return api.get(`/teams/get-member`, {
+        params: {
+            startdate: teamStartDate,
+            enddate: teamEndDate
+        }
+    })
 }
 
 export const removeTeamMemberApi = (userid: string) => {

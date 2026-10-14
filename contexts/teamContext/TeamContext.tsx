@@ -4,15 +4,30 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { useLogin } from "../authContext/AuthContext";
 import { addMemberApi, countTeamApi, getMemberApi, removeTeamMemberApi } from "@/services/Frontend/teamApi";
 import { userType } from "@/types/usertype";
+import { useAppSelector } from "@/hooks/reduxhooks";
 
 type TeamType = {
     totalMember: number,
     newTotal: number
 }
 
+type TaskName = {
+    id: string,
+    name: string
+}
+
+type UserType = {
+    createdAt: string
+    id: string,
+    username: string,
+    email: string,
+    role: string,
+    assignedTask: TaskName[]
+}
+
 type AdminType = {
     admins: userType
-    member: userType[]
+    member: UserType[]
 }
 
 type TeamContextType = {
@@ -20,6 +35,7 @@ type TeamContextType = {
     memberData: AdminType | null,
     inviteMember: (userid: string) => void;
     removeTeamMember: (userid: string) => void;
+    getMember: () => void;
 }
 
 type TeamUi1 = {
@@ -29,8 +45,19 @@ type TeamUi1 = {
     setDeleteMemberModal: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
+type ReportType = {
+    teamReport: {
+        totalMember: number,
+        memberWithTask: number,
+        memberWithOutTask: number,
+        totalTask: number
+    },
+
+}
+
 const teamProvider = createContext<TeamContextType | null>(null)
 const teamUi1 = createContext<TeamUi1 | null>(null)
+const teamReportProvider = createContext<ReportType | null>(null)
 
 export default function TeamContext({ children }: { children: ReactNode }) {
 
@@ -44,6 +71,15 @@ export default function TeamContext({ children }: { children: ReactNode }) {
     const [memberData, setMemberData] = useState<AdminType | null>(null)
     const [teamMemberModal, setTeamMemberModal] = useState<boolean>(false)
     const [deleteMemberModal, setDeleteMemberModal] = useState<string | null>(null)
+    const { teamStartDate, teamEndDate } = useAppSelector((state) => state.filterTeam)
+    const [teamReport, setTeamReport] = useState(
+        {
+            totalMember: 0,
+            memberWithTask: 0,
+            memberWithOutTask: 0,
+            totalTask: 0
+        }
+    )
 
     async function countMember() {
         const [res, error] = await tryCatch(countTeamApi())
@@ -66,13 +102,20 @@ export default function TeamContext({ children }: { children: ReactNode }) {
     }, [authReady])
 
     async function getMember() {
-        const [res, error] = await tryCatch(getMemberApi())
+        const [res, error] = await tryCatch(getMemberApi(teamStartDate, teamEndDate))
 
         if (error) {
             console.log(error);
             return
         }
         setMemberData(res?.data.getMember)
+
+        setTeamReport({
+            totalMember: res?.data.getMember.totalMember,
+            memberWithTask: res?.data.getMember.memberWithTask,
+            memberWithOutTask: res?.data.getMember.memberWithOutTask,
+            totalTask: res?.data.getMember.totalTask
+        })
 
     }
 
@@ -81,7 +124,8 @@ export default function TeamContext({ children }: { children: ReactNode }) {
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getMember()
-    }, [authReady])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authReady, teamStartDate, teamEndDate])
 
     async function inviteMember(userid: string) {
         const [res, error] = await tryCatch(addMemberApi(userid))
@@ -104,10 +148,14 @@ export default function TeamContext({ children }: { children: ReactNode }) {
         await countMember()
     }
 
+    
+
     return (
-        <teamProvider.Provider value={{ teamMember, memberData, inviteMember, removeTeamMember }}>
+        <teamProvider.Provider value={{ teamMember, memberData, inviteMember, removeTeamMember, getMember }}>
             <teamUi1.Provider value={{ teamMemberModal, setTeamMemberModal, deleteMemberModal, setDeleteMemberModal, }}>
-                {children}
+                <teamReportProvider.Provider value={{ teamReport }}>
+                    {children}
+                </teamReportProvider.Provider>
             </teamUi1.Provider>
         </teamProvider.Provider>
     )
@@ -129,4 +177,15 @@ export function useTeamUi1() {
     }
 
     return context
+}
+
+export function useTeamReport() {
+    const context = useContext(teamReportProvider)
+
+    if (!context) {
+        throw new Error('teamReportProvider must be inside useTeamReport')
+    }
+
+    return context
+
 }

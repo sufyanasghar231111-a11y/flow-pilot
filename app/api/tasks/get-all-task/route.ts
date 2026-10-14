@@ -8,14 +8,17 @@ export async function GET(request: NextRequest) {
 
         await checkrole(request, 'ADMIN')
 
-        const getTasks = await taskService.getTask(
+        const { totalTask, totalDone, totalTodo, totalReview, totalInProgress, totalDonePercentage, totalTodoPercentage, totalReviewPercentage, totalInProgressPercentage, getTasks,
+            totalHigh, totalMedium, totalLow, totalHighPercentage, totalMediumPercentage, totalLowPercentage
+        } = await taskService.getTask(
             request
         )
 
         return Response.json(
             {
                 message: "Successful get",
-                getTasks
+                totalTask, totalDone, totalTodo, totalReview, totalInProgress, totalDonePercentage, totalTodoPercentage, totalReviewPercentage, totalInProgressPercentage, getTasks,
+                totalHigh, totalMedium, totalLow, totalHighPercentage, totalMediumPercentage, totalLowPercentage
             }, {
             status: 200
         }

@@ -1,7 +1,7 @@
 "use client"
-import { useProjectStatus } from "@/contexts/analyticsContext/AnalyticsContext";
+
 import ProjectDonut from "./ProjectDonut";
-import { useProjectStat } from "@/hooks/useProject";
+import ProjectStatDistribution from "./ProjectStatDistribution";
 
 export type Segment = {
     label: string,
@@ -9,19 +9,9 @@ export type Segment = {
     color: string,
 }
 
+export default function ProjectStatusDistribution({elem}:{elem:string}) {
 
-export default function ProjectStatusDistribution() {
-    const { overDueStats } = useProjectStatus()
-    const { projectStats } = useProjectStat()
-
-
-    const data: Segment[] = [
-        { label: "Completed", value: projectStats.totalComplete, color: "#22c55e" },
-        { label: "Active", value: projectStats.totalActive, color: "#3b82f6" },
-        { label: "Pending", value: projectStats.totalPending, color: "#f7d800" },
-        { label: "Cancelled", value: projectStats.totalCancelled, color: "#ef4444" },
-        { label: "Overdue", value: overDueStats, color: "#f97316" },
-    ]
+    const data = ProjectStatDistribution()
 
     const total = data.reduce((acc, current) => {
         return acc + current.value
@@ -32,7 +22,7 @@ export default function ProjectStatusDistribution() {
 
         <div className="w-[33%] border rounded-md border-[#252938] bg-[#171A26]">
             <div className="px-3 py-2">
-                <h1 className='text-sm font-semibold'>Project Status Distribution</h1>
+                <h1 className='text-sm font-semibold'>Project Status {elem}</h1>
                 <h1 className="text-xs text-gray-500">Current status of all Projects.</h1>
             </div>
             <div className="flex items-center justify-between gap-3 px-1 py-4">

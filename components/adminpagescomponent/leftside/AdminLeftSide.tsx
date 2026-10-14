@@ -5,6 +5,9 @@ import { RiCalendarLine, RiCalendarTodoFill, RiDashboardLine, RiFolderChartFill,
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLogout } from "@/contexts/authContext/AuthContext";
+import { useEffect } from "react";
+import { useAppDispatch } from "@/hooks/reduxhooks";
+import { setEndDate, setStartDate, setStatus } from "@/store/slices/reportSlice";
 
 export default function AdminLeftSide() {
 
@@ -59,6 +62,15 @@ export default function AdminLeftSide() {
         },
     ]
 
+    const dispatch = useAppDispatch()
+
+
+    useEffect(()=>{
+        dispatch(setStatus('All'))
+        dispatch(setStartDate(''))
+        dispatch(setEndDate(''))
+    },[dispatch, pathname])
+
     return (
         <div className="w-[21%] bg-[#0A0C16] text-white h-full fixed ">
             <header className="px-7 py-4">
@@ -90,7 +102,7 @@ export default function AdminLeftSide() {
                     })
                 }
 
-                <footer className="">
+                <footer>
                     <button onClick={() => { handleLogout() }} type="button" className="w-full flex items-center gap-5 px-5.5 py-2.5 text-[15px] text-gray-400 hover:bg-white/5 hover:text-white border border-transparent rounded-md transition-colors">
                         <RiLogoutBoxRLine className="w-5 h-5 " /> <h1>Logout</h1>
                     </button>

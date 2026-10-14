@@ -58,14 +58,30 @@ export class TeamService {
             throw new Error('Admin is not found')
         }
 
+        const { searchParams } = new URL(request.url)
+        const startDate = searchParams.get('startdate')
+        const enddate = searchParams.get('enddate')
+
         const getMember = await prisma.teamMember.findMany(
             {
                 where: {
-                    adminId: admin.userId
+                    adminId: admin.userId,
+                    ...(startDate || enddate ? {
+                        createdAt: {
+
+                            ...(startDate ? { gte: new Date(startDate) } : {}),
+                            ...(enddate ? {
+                                lt: new Date(
+                                    new Date(enddate).getTime() + 24 * 60 * 60 * 1000
+                                )
+                            } : {})
+
+                        }
+                    } : {})
                 },
                 select: {
                     id: true,
-                    createdAt:true,
+                    createdAt: true,
                     user: {
                         select: {
                             id: true,
@@ -74,30 +90,45 @@ export class TeamService {
                             role: true
                         }
 
-
                     },
-                    byAdmin: {
+                    // byAdmin: {
+                    //     select: {
+                    //         id: true,
+                    //         username: true,
+                    //         email: true
+                    //     }
+
+                    // },
+                    assignedTask: {
                         select: {
                             id: true,
-                            username: true,
-                            email: true
+                            name: true
                         }
-
                     }
                 },
                 orderBy: {
                     createdAt: 'desc'
                 }
             }
-
         )
 
+        const totalMember = getMember.filter(elem => elem.user.role === 'USER').length
+        const memberWithTask = getMember.filter(elem => elem.assignedTask.length > 0).length
+        const memberWithOutTask = getMember.filter(elem => elem.assignedTask.length === 0).length
+        const totalTask = getMember.reduce((total, user) => total + user.assignedTask.length, 0)
+
         return {
-            admins: getMember[0].byAdmin,
+            totalMember,
+            memberWithTask,
+            memberWithOutTask,
+            totalTask,
+            // admins: getMember[0].byAdmin,
             member: getMember.map(elem => ({
                 ...elem.user,
-                createdAt:elem.createdAt,
-            }))
+                createdAt: elem.createdAt,
+                assignedTask: elem.assignedTask
+            })),
+
         }
 
     }

@@ -39,6 +39,9 @@ export const projectService = {
         const admin = await getAuthUser(request)
         const { searchParams } = new URL(request.url)
         const page = Number(searchParams.get('page')) || 1
+        const status = searchParams.get('status')
+        const startDate = searchParams.get('startdate')
+        const endDate = searchParams.get('enddate')
 
         const limit = 8
         const skip = (page - 1) * limit
@@ -55,58 +58,99 @@ export const projectService = {
             throw new Error("Only Admin Can Get")
         }
 
-        const findProject = await prisma.project.findMany(
-            {
-                where: {
-                    adminId: admin.userId
-                },
-                include: {
-                    admin: {
-                        select: {
-                            id: true,
-                            username: true,
-                            email: true,
+        const where = {
+            adminId: admin.userId,
+            ...(status && status !== 'All' ? { status: status as ProjectStatus } : {}),
+            ...(startDate || endDate ?
+                {
+                    createdAt: {
+                        ...(startDate ? {
+                            gte: new Date(startDate)
+                        } : {}),
+                        ...(endDate ? {
+                            lt: new Date(
+                                new Date(endDate).getTime() + 24 * 60 * 60 * 1000
+                            )
+                        } : {})
+                    }
+                } : {}
+            )
+        }
 
-                        }
-                    },
-                    tasks: {
-                        select: {
-                            id: true,
-                            name: true,
-                            status: true,
-                            dueDate: true
-                        }
-                    },
-                    projectmembers: {
-                        select: {
-                            id: true,
-                            user: {
-                                select: {
-                                    user: {
-                                        select: {
-                                            id: true,
-                                            username: true,
-                                            email: true
+        const [findProject, totalProject, withOutPaginations] = await Promise.all([
+            prisma.project.findMany(
+                {
+                    where,
+                    include: {
+                        admin: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+
+                            }
+                        },
+                        tasks: {
+                            select: {
+                                id: true,
+                                name: true,
+                                status: true,
+                                dueDate: true
+                            }
+                        },
+                        projectmembers: {
+                            select: {
+                                id: true,
+                                user: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                id: true,
+                                                username: true,
+                                                email: true
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        },
+                            },
 
+                        }
+                    },
+
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    skip,
+                    take: limit
+
+                }
+            ),
+
+            prisma.project.count(
+                {
+                    where: {
+                        adminId: admin.userId
                     }
-                },
+                }
+            ),
 
-                orderBy: {
-                    createdAt: 'desc'
-                },
+            prisma.project.findMany({
+                where
+            })
+        ])
 
-                skip,
-                take: limit
+        const totalCompleted = withOutPaginations.filter((elem) => elem.status === 'COMPLETE').length
+        const totalActive = withOutPaginations.filter((elem) => elem.status === 'ACTIVE').length
+        const totalCancelled = withOutPaginations.filter((elem) => elem.status === 'CANCELLED').length
+        const totalPending = withOutPaginations.filter((elem) => elem.status === 'PENDING').length
+        const withOutPagination = withOutPaginations.length
 
-            }
-        )
+        const totalCompletePercentage = Math.round((totalCompleted / withOutPaginations.length) * 100)
+        const totalActivePercentage = Math.round((totalActive / withOutPaginations.length) * 100)
+        const totalPendingPercentage = Math.round((totalPending / withOutPaginations.length) * 100)
+        const totalCancelledPercentage = Math.round((totalCancelled / withOutPaginations.length) * 100)
 
-        return findProject
+        return { totalProject, totalActive, totalCancelled, totalPending, totalCompleted, totalActivePercentage, totalCompletePercentage, totalPendingPercentage, totalCancelledPercentage, findProject, withOutPagination }
     },
 
     async updateProject(

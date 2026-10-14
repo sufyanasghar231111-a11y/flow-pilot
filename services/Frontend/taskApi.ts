@@ -9,8 +9,15 @@ export const taskCreationApi = (projectId: string, data: TaskState) => {
     return api.post(`/tasks/create-task/${projectId}`, data)
 }
 
-export const getAllTaskApi = () => {
-    return api.get(`/tasks/get-all-task`)
+export const getAllTaskApi = (taskStatus: string, priority: string, startTaskDate: string, endTaskDate: string) => {
+    return api.get(`/tasks/get-all-task`, {
+        params: {
+            taskstatus: taskStatus,
+            priority: priority,
+            startdate: startTaskDate,
+            enddate: endTaskDate
+        }
+    })
 }
 
 export const updateTaskApi = (projectid: string, data: { status: string | null }) => {
@@ -25,6 +32,6 @@ export const singleTaskApi = (taskid: string) => {
     return api.get(`/tasks/get-single-task/${taskid}`)
 }
 
-export const updateSingleTaskApi = (taskid: string, data:TaskState) => {
+export const updateSingleTaskApi = (taskid: string, data: TaskState) => {
     return api.patch(`/tasks/update-task-id/${taskid}`, data)
 }

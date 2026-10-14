@@ -16,7 +16,6 @@ export default function ProjectCompletionTrend() {
         }))
     }, [projectCompletion, projectCreation])
     
-
     return (
         <div className="w-[49%] rounded-md border border-[#252938] bg-[#171A26]">
 

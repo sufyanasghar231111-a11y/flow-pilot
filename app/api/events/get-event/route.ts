@@ -6,13 +6,13 @@ export async function GET(request: NextRequest) {
     try {
         await checkrole(request, 'ADMIN')
 
-        const getEvent = await EventService.getEvent(
+        const { totalEvent, totalPersonalMeeting, totalProjectMeeting, totalDeadLine, getEvent } = await EventService.getEvent(
             request
         )
         return Response.json(
             {
                 message: "Successful get",
-                getEvent
+                totalEvent, totalPersonalMeeting, totalProjectMeeting, totalDeadLine, getEvent
             },
             {
                 status: 200

@@ -8,12 +8,12 @@ export async function GET(request: NextRequest) {
 
         await checkrole(request, 'ADMIN')
 
-        const findProject = await projectService.getProjectByAdmin(request)
+        const { totalProject, totalActive, totalCancelled, totalPending, totalCompleted, totalActivePercentage, totalCompletePercentage, totalPendingPercentage, totalCancelledPercentage, findProject, withOutPagination } = await projectService.getProjectByAdmin(request)
 
         return Response.json(
             {
                 message: "Successful get",
-                findProject
+                totalProject, totalActive, totalCancelled, totalPending, totalCompleted, totalActivePercentage, totalCompletePercentage, totalPendingPercentage, totalCancelledPercentage, findProject, withOutPagination
             },
             {
                 status: 200
@@ -23,16 +23,16 @@ export async function GET(request: NextRequest) {
     }
     catch (err) {
 
-         const message = err instanceof Error ? err.message : 'Something Went Wrong'
+        const message = err instanceof Error ? err.message : 'Something Went Wrong'
 
         return Response.json(
             {
                 message
             },
             {
-                status:message === 'forbidden' ? 403:
-                message === 'Unauthorized' || message === 'Invalid access token' ? 401 :
-                500
+                status: message === 'forbidden' ? 403 :
+                    message === 'Unauthorized' || message === 'Invalid access token' ? 401 :
+                        500
             }
         )
     }

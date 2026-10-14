@@ -13,7 +13,7 @@ export interface DataType {
             username: string
         }
     },
-    user:string
+    user: string
 }
 
 export interface RecentData {
@@ -47,7 +47,7 @@ const recentReducer = createSlice({
                 state.loading = false;
                 state.error = action.error.message ?? "Something Went Wrong";
             })
-    }, 
+    },
 
 })
 

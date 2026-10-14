@@ -6,6 +6,7 @@ import React, { ReactNode, useEffect, useState, createContext, useContext, useMe
 import { useLogin } from "../authContext/AuthContext";
 import { ProjectStatsType, ProjectStatType, ProjectValue, UpdatePropType } from "@/types/projectType";
 import { useSearchParams } from "next/navigation";
+import { useAppSelector } from "@/hooks/reduxhooks";
 
 
 type UiType1 = {
@@ -50,6 +51,23 @@ type DeleteModalType = {
     setProjectDeleteModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+export type ReportPage = {
+    totalActivePercentage: number,
+    withOutPagination: number,
+    totalCompletePercentage: number,
+    totalPendingPercentage: number,
+    totalCancelledPercentage: number,
+    totalProject: number,
+    totalActive: number,
+    totalCancelled: number,
+    totalPending: number,
+    totalCompleted: number,
+}
+
+type ReportType = {
+    report: ReportPage
+}
+
 export const projectProvider = createContext<ProjectValue | null>(null)
 export const UiProjectProvider1 = createContext<UiType1 | null>(null)
 export const updateProjectProvider = createContext<UpdateProjectType | null>(null)
@@ -58,6 +76,7 @@ const projectModalProvider = createContext<ProjectModal | null>(null)
 export const projectCreationInput = createContext<ProjectCreationInputType | null>(null)
 export const projectStatProvider = createContext<StatsProvider | null>(null)
 export const projectDeleteProvider = createContext<DeleteModalType | null>(null)
+export const reportProjectContext = createContext<ReportType | null>(null)
 
 export default function ProjectContext({ children }: { children: ReactNode }) {
 
@@ -105,6 +124,19 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     // const [projectPage, setProjectPage] = useState(1)
     const [filterModal, setFilterModal] = useState(false)
     const [filterDate, setFilterData] = useState('')
+    const [report, setReport] = useState<ReportPage>({
+        totalProject: 0,
+        totalActive: 0,
+        totalCancelled: 0,
+        totalPending: 0,
+        totalCompleted: 0,
+        totalActivePercentage: 0,
+        totalCompletePercentage: 0,
+        totalPendingPercentage: 0,
+        totalCancelledPercentage: 0,
+        withOutPagination: 0
+    })
+    const { status, startDate, endDate } = useAppSelector((state) => state.filterData)
 
     const searchParams = useSearchParams()
     const projectPage = Number(searchParams.get('page')) || 1
@@ -151,7 +183,8 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     }, [authReady])
 
     const getAllProject = useCallback(async () => {
-        const [res, error] = await tryCatch(getProjectApi(projectPage))
+
+        const [res, error] = await tryCatch(getProjectApi(projectPage, status, startDate, endDate))
 
         if (error) {
             console.log(error);
@@ -159,15 +192,27 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         }
 
         setGetProject(res?.data.findProject)
+        setReport({
+            totalProject: res?.data.totalProject,
+            totalActive: res?.data.totalActive,
+            totalCancelled: res?.data.totalCancelled,
+            totalPending: res?.data.totalPending,
+            totalCompleted: res?.data.totalCompleted,
+            totalActivePercentage: res?.data.totalActivePercentage,
+            totalCompletePercentage: res?.data.totalCompletePercentage,
+            totalPendingPercentage: res?.data.totalPendingPercentage,
+            totalCancelledPercentage: res?.data.totalCancelledPercentage,
+            withOutPagination: res?.data.withOutPagination
+        })
 
-    }, [projectPage])
+    }, [endDate, projectPage, startDate, status])
 
     useEffect(() => {
         if (!authReady) return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllProject()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authReady, projectPage])
+    }, [authReady, projectPage, endDate, startDate, status])
 
     const ProjectCreation = useCallback(async (e: { preventDefault: () => void; }) => {
         e.preventDefault()
@@ -307,7 +352,9 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
                             <projectModalProvider.Provider value={ProjectModal}>
                                 <projectCreationInput.Provider value={ProjectCreationInputType}>
                                     <projectDeleteProvider.Provider value={DeleteModalType}>
-                                        {children}
+                                        <reportProjectContext.Provider value={{ report }}>
+                                            {children}
+                                        </reportProjectContext.Provider>
                                     </projectDeleteProvider.Provider>
                                 </projectCreationInput.Provider>
                             </projectModalProvider.Provider>
@@ -360,6 +407,16 @@ export function useProjectDelete() {
 
     if (!context) {
         throw new Error('projectDeleteProvider must be inside useProjectDelete')
+    }
+
+    return context
+}
+
+export function useReport() {
+    const context = useContext(reportProjectContext)
+
+    if (!context) {
+        throw new Error('useReport must be inside reportProjectContext')
     }
 
     return context

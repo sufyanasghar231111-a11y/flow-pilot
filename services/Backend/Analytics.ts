@@ -436,14 +436,14 @@ export class AnalyticService {
                     types: 'taskCreation',
                     data: elem.createdAt,
                     name: elem.name,
-                    username:elem.assignedTo
+                    username: elem.assignedTo
                 },
 
                 ...(elem.completedAt ? [{
                     types: 'taskCompletion',
                     data: elem.completedAt,
                     name: elem.name,
-                    username:elem.assignedTo
+                    username: elem.assignedTo
                 }] : [])
             ])
 

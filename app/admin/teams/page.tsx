@@ -9,7 +9,7 @@ export default function Teams (){
             <AdminNav />
             <TeamHeader />
             <TeamStats />
-            <AllTeamDetail />
+            <AllTeamDetail page='page' />
         </div>
     )
 }

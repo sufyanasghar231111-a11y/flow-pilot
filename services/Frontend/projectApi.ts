@@ -5,13 +5,17 @@ export const totalCount = () => {
     return api.get('/project/count-project')
 }
 
-export const getProjectApi = (projectPage: number) => {
-    return api.get(`/project/get-project` , {
-        params:{
-            page:projectPage
+export const getProjectApi = (projectPage: number, status: string, startDate: string, endDate: string) => {
+    return api.get(`/project/get-project`, {
+        params: {
+            page: projectPage,
+            status: status,
+            startdate: startDate,
+            enddate: endDate
         }
-    } )
+    })
 }
+
 
 export const projectCreationApi = (data: { name: string; description: string; startDate: string; deadline: string }) => {
     return api.post(`/project/create-project`, data)
