@@ -42,8 +42,8 @@ export const comparisonSlice = createSlice({
                 state.error = null
             })
             .addCase(reportCompareThunk.fulfilled, (state, action) => {
-                state.lastMonth = action.payload;
                 state.loading = false;
+                state.lastMonth = action.payload;
             })
             .addCase(reportCompareThunk.rejected, (state, action) => {
                 state.loading = false;

@@ -161,12 +161,12 @@ export class ReportService {
             ]
         )
 
-        const taskCompleted = lastMonthTaskCompletion === 0 ? 100 : (((currentMonthTaskCompletion - lastMonthTaskCompletion) / lastMonthTaskCompletion) * 100).toFixed(0)
-        const projectCompleted = lastMonthProjectCompletion === 0 ? 100 : (((currentMonthProjectCompletion - lastMonthProjectCompletion) / lastMonthProjectCompletion) * 100).toFixed(0)
+        const taskCompleted = lastMonthTaskCompletion === 0 ? currentMonthTaskCompletion > 0 ? 100 : 0 : (((currentMonthTaskCompletion - lastMonthTaskCompletion) / lastMonthTaskCompletion) * 100).toFixed(0)
+        const projectCompleted = lastMonthProjectCompletion === 0 ? currentMonthProjectCompletion > 0 ? 100 : 0 : (((currentMonthProjectCompletion - lastMonthProjectCompletion) / lastMonthProjectCompletion) * 100).toFixed(0)
 
-        const percentageProject = lastMonthProject === 0 ? 100 : (((currentMonthProject - lastMonthProject) / lastMonthProject) * 100).toFixed(0)
-        const percentageTask = lastMonthTask === 0 ? 100 : (((currentMonthTask - lastMonthTask) / lastMonthTask) * 100).toFixed(0)
-        const percentageTeam = lastMonthMember === 0 ? 100 : (((currentMonthMember - lastMonthMember) / lastMonthMember) * 100).toFixed(0)
+        const percentageProject = lastMonthProject === 0 ? currentMonthProject > 0 ? 100 : 0 : (((currentMonthProject - lastMonthProject) / lastMonthProject) * 100).toFixed(0)
+        const percentageTask = lastMonthTask === 0 ? currentMonthTask > 0 ? 100 : 0 : (((currentMonthTask - lastMonthTask) / lastMonthTask) * 100).toFixed(0)
+        const percentageTeam = lastMonthMember === 0 ? currentMonthMember > 0 ? 100 : 0 : (((currentMonthMember - lastMonthMember) / lastMonthMember) * 100).toFixed(0)
 
         return { percentageProject, percentageTask, percentageTeam, taskCompleted, projectCompleted }
     }

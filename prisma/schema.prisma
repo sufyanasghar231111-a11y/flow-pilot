@@ -8,23 +8,25 @@ datasource db {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  username       String
-  email          String          @unique
-  password       String
-  role           Role            @default(USER)
-  createdAt      DateTime        @default(now())
+  id                 String          @id @default(cuid())
+  username           String
+  email              String          @unique
+  password           String
+  role               Role            @default(USER)
+  createdAt          DateTime        @default(now())
 
 
-  logouts        Logout[]
-  projects       Project[]
+  logouts            Logout[]
+  projects           Project[]
 
-  createdTask    Task[]          @relation("CreatedTask")
+  createdTask        Task[]          @relation("CreatedTask")
   
-  admin          Event[]        
+  admin              Event[]        
   
-  user           TeamMember[]    @relation("user")    
-  byAdmin        TeamMember[]    @relation("admin")    
+  user               TeamMember[]    @relation("user")    
+  byAdmin            TeamMember[]    @relation("admin")
+  userNotification   Notification[]  @relation("userNotification")   
+  adminNotification  Notification[]  @relation("adminNotification")
 }
 
 
@@ -71,6 +73,7 @@ model Project {
   admin          User            @relation(fields: [adminId], references: [id])
   projectmembers ProjectMember[]
   tasks          Task[]
+  notification   Notification[]
 
   @@index([adminId])
 }
@@ -104,7 +107,7 @@ model Task {
   assignedTo   TeamMember?      @relation("AssignedTask", fields: [assignedToId], references: [id])
   createdBy    User             @relation("CreatedTask", fields: [createdById], references: [id])
   project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
+  notification Notification[]
   @@unique([projectId, name])
 }
 
@@ -122,6 +125,7 @@ model Event {
   type          EventType
 
   eventMember   EventMember[]
+  notification  Notification[]
 
 }
 
@@ -135,6 +139,34 @@ model EventMember {
   member        TeamMember @relation( fields:[memberId], references:[id], onDelete:Cascade)
 
   @@unique([eventId, memberId])
+
+}
+
+model Notification {
+  id               String       @id @default(cuid())
+  userId           String
+  adminId          String
+  type             NotificationType
+  title            String
+  message          String
+  isRead           Boolean      @default(false)
+
+  projectId        String?
+  taskId           String?
+  eventId          String?
+
+  createdAt        DateTime     @default(now())
+
+  user             User         @relation("userNotification",fields:[userId], references:[id], onDelete:Cascade)
+  admin            User         @relation("adminNotification", fields:[adminId], references:[id], onDelete:Cascade)
+  project          Project?     @relation(fields:[projectId], references:[id], onDelete:Cascade)
+  task             Task?        @relation(fields:[taskId], references:[id], onDelete:Cascade)
+  event            Event?       @relation(fields:[eventId], references:[id], onDelete:Cascade)
+
+  @@index([userId, createdAt, isRead])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([eventId])
 
 }
 
@@ -163,8 +195,26 @@ enum TaskStatus {
   DONE
 }
 
-enum EventType{
+enum EventType {
   PROJECT_MEETING
   DEADLINE
   PERSONAL_MEETING
+}
+
+enum NotificationType {
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  ADD_PROJECT_MEMBER
+  PROJECT_COMPLETED
+  PROJECT_DEADLINE
+  TASK_ASSIGNED
+  TASK_UPDATED
+  TASK_COMPLETED
+  TASK_OVERDUE
+  TEAM_MEMBER_ADDED
+  TEAM_MEMBER_REMOVED
+  EVENT_INVITATION
+  EVENT_UPDATED
+  EVENT_CANCELLED
+  EVENT_REMINDER
 }

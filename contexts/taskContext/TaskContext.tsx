@@ -171,6 +171,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
             totalLowPercentage: 0
         }
     )
+
     const { priority, taskStatus, endTaskDate, startTaskDate } = useAppSelector((state) => state.filterTask)
 
     async function countTaskStats() {
@@ -241,6 +242,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
             totalMediumPercentage: res?.data.totalMediumPercentage,
             totalLowPercentage: res?.data.totalLowPercentage
         })
+        await getAllProject()
     }
 
     useEffect(() => {
@@ -293,6 +295,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
             return
         }
         setSingleTaskData(res?.data.task)
+        await getAllProject()
     }
 
     useEffect(() => {

@@ -3,7 +3,7 @@ import AllTeamDetail from "@/components/adminpagescomponent/rightside/team/AllTe
 import TeamHeader from "@/components/adminpagescomponent/rightside/team/TeamHeader";
 import TeamStats from "@/components/adminpagescomponent/rightside/team/TeamStats";
 
-export default function Teams (){
+export default function Teams() {
     return (
         <div className="w-full h-full ">
             <AdminNav />

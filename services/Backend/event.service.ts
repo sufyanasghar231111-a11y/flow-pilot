@@ -105,6 +105,59 @@ export class EventService {
             }
         )
 
+        const now = new Date()
+        const beforeOneDay = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+
+        const deadlineSoon = getEvent.filter(elem =>
+            elem.date &&
+            new Date(elem.date) > now &&
+            new Date(elem.date) <= beforeOneDay
+        )
+
+        if (deadlineSoon.length > 0) {
+            const candidates = deadlineSoon.map((elem) => ({
+                adminId: admin.userId,
+                userId: admin.userId,
+                type: 'EVENT_REMINDER' as const,
+                title: 'Event Reminder',
+                message: `Tomorrow is ${elem.name} event`,
+                eventId: elem.id
+            }))
+
+            const alreadyExist = await prisma.notification.findMany(
+                {
+                    where: {
+                        OR: candidates.map((notification) => ({
+                            adminId: notification.adminId,
+                            userId: notification.userId,
+                            type: notification.type,
+                            eventId: notification.eventId
+                        }))
+                    },
+                    select: {
+                        eventId: true,
+                        userId: true
+                    }
+                }
+            )
+
+            const newNotification = candidates.filter((elem) => {
+                return !alreadyExist.some((exist) =>
+                    exist.userId === elem.userId &&
+                    exist.eventId === elem.eventId
+                )
+            })
+
+            if(newNotification.length > 0){
+                await prisma.notification.createMany(
+                    {
+                        data: newNotification
+                    }
+                )
+            }
+
+        }
+
         const totalEvent = getEvent.length
         const totalPersonalMeeting = getEvent.filter(elem => elem.type === 'PERSONAL_MEETING').length
         const totalProjectMeeting = getEvent.filter(elem => elem.type === 'PROJECT_MEETING').length

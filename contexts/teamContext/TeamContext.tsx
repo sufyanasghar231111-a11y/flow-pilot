@@ -148,7 +148,7 @@ export default function TeamContext({ children }: { children: ReactNode }) {
         await countMember()
     }
 
-    
+
 
     return (
         <teamProvider.Provider value={{ teamMember, memberData, inviteMember, removeTeamMember, getMember }}>

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Task } from "@/app/generated/prisma/client";
 import TaskCard from "./TaskCard";
 import { Status, useTaskUi1 } from "@/contexts/taskContext/TaskContext";
+import { useProject } from "@/hooks/useProject";
 
 
 export default function KanbanBoard() {
@@ -57,6 +58,8 @@ export default function KanbanBoard() {
                     : task
             )
         )
+
+        
 
         updateTaskByStatus(taskId, status)
     }

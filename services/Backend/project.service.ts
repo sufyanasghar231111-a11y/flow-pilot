@@ -101,8 +101,11 @@ export const projectService = {
                         projectmembers: {
                             select: {
                                 id: true,
+                                teamMemberId: true,
+
                                 user: {
                                     select: {
+                                        userId: true,
                                         user: {
                                             select: {
                                                 id: true,
@@ -138,6 +141,59 @@ export const projectService = {
                 where
             })
         ])
+
+        const now = new Date()
+        const beforeDay = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+
+        const deadlineSoon = findProject.filter(elem =>
+            elem.deadline &&
+            elem.deadline > now &&
+            elem.deadline <= beforeDay &&
+            elem.status !== 'COMPLETE' &&
+            elem.status !== 'CANCELLED'
+        )
+
+
+        if (deadlineSoon.length > 0) {
+            const candidates = deadlineSoon.map((project) => ({
+                adminId: admin.userId,
+                userId: admin.userId,
+                type: "PROJECT_DEADLINE" as const,
+                title: "Project Deadline",
+                message: `The deadline for project "${project.name}" is approaching.`,
+                projectId: project.id,
+            }));
+
+            const alreadyExist = await prisma.notification.findMany({
+                where: {
+                    OR: candidates.map((notification) => ({
+                        adminId: notification.adminId,
+                        userId: notification.userId,
+                        type: notification.type,
+                        projectId: notification.projectId,
+                    })),
+                },
+                select: {
+                    projectId: true,
+                    userId: true,
+                },
+            });
+
+            const newNotifications = candidates.filter(
+                (notification) =>
+                    !alreadyExist.some(
+                        (existing) =>
+                            existing.projectId === notification.projectId &&
+                            existing.userId === notification.userId
+                    )
+            );
+
+            if (newNotifications.length > 0) {
+                await prisma.notification.createMany({
+                    data: newNotifications,
+                });
+            }
+        }
 
         const totalCompleted = withOutPaginations.filter((elem) => elem.status === 'COMPLETE').length
         const totalActive = withOutPaginations.filter((elem) => elem.status === 'ACTIVE').length
@@ -197,6 +253,8 @@ export const projectService = {
             }
         )
 
+
+
         const updateProject = await prisma.project.update(
             {
                 where: {
@@ -209,11 +267,65 @@ export const projectService = {
                     ...(deadline !== undefined && { deadline }),
                     ...(startDate !== undefined && { startDate }),
                     ...(status !== undefined && { status }),
+                },
+                include: {
+                    projectmembers: {
+                        include: {
+                            user: {
+                                select: {
+                                    userId: true,
+                                    adminId: true
+                                }
+                            }
+                        }
+                    }
                 }
             }
         )
 
-        return updateProject
+        const change: string[] = []
+
+        if (existing.name !== updateProject.name) {
+            change.push(
+                `Project name change from "${existing.name}" to "${updateProject.name}"`
+            )
+        }
+
+        if (existing.status !== updateProject.status) {
+            change.push(
+                `Project status change from "${existing.status}" to "${updateProject.status}"`
+            )
+        }
+
+        if (existing.description !== updateProject.description) {
+            change.push(
+                `Project description change from "${existing.description}" to "${updateProject.description}"`
+            )
+        }
+
+        if (existing.deadline?.getTime() !== updateProject.deadline?.getTime()) {
+            change.push(
+                `Project deadline was changed.`
+            )
+        }
+
+        if (change.length > 0) {
+
+            await prisma.notification.createMany(
+                {
+                    data: updateProject?.projectmembers.map((member) => ({
+                        title: 'Project Update',
+                        message: change.join(" "),
+                        type: 'PROJECT_UPDATED',
+                        userId: member.user.userId,
+                        adminId: admin.userId,
+                        projectId: updateProject.id,
+                    }))
+                }
+            );
+        }
+
+        return { updateProject }
     },
 
     async deleteProject(id: string, request: NextRequest) {
@@ -374,8 +486,24 @@ export const projectService = {
                 data: {
                     projectId: projectid,
                     teamMemberId: teamMember.id,
+                },
+                include: {
+                    user: true,
+                    project: true
                 }
             }
+        )
+
+        await prisma.notification.create({
+            data: {
+                adminId: admin.userId,
+                userId: addMember.user.userId,
+                title: 'Project Membership Added',
+                message: `You are now a member of "${addMember.project.name}". You can view project details and collaborate with your team`,
+                type: "ADD_PROJECT_MEMBER",
+                projectId: projectid
+            }
+        }
         )
 
         return addMember
@@ -412,10 +540,29 @@ export const projectService = {
                                 }
                             }
                         },
-                    }
-                }
+                    },
+                    tasks: true
+                },
+
             }
         )
+
+        if ((singleProject?.tasks.length ?? 0) > 0 && singleProject?.tasks.every(elem => elem.status === 'DONE')) {
+
+            await prisma.project.update(
+                {
+                    where: {
+                        id: projectid
+                    },
+                    data: {
+                        status: 'COMPLETE',
+                        completedAt: new Date()
+                    }
+                }
+            )
+        }
+
         return singleProject
     }
+
 }

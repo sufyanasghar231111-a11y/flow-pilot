@@ -10,9 +10,7 @@ export default function Projects() {
             <AdminNav />
             <ProjectHeader />
             <AllProjectStat />
-            
             <AllProjectDetail data='px-4' report='project' />
-            
         </div>
     )
 }

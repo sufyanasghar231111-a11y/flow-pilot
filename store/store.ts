@@ -3,6 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import recentReducer from '@/store/slices/RecentSlice'
 import weeklyReducer from '@/store/slices/WeeklySlice'
 import { comparisonReducer, customTabReducer, filterEventReducer, filterReducer, filterTaskReducer, filterTeamReducer, showReportReducer, taskShowReducer, teamShowReducer } from "./slices/reportSlice";
+import { allReadReducer, CustomTabReducer, deleteSingleReducer, MarkAsSingleReducer, notificationReducer, StatReducer } from "./slices/NotificationSlice";
 
 export const store = configureStore({
     reducer: {
@@ -16,7 +17,13 @@ export const store = configureStore({
         showTaskReport: taskShowReducer,
         filterTeam: filterTeamReducer,
         showTeamReport: teamShowReducer,
-        filterEvent: filterEventReducer
+        filterEvent: filterEventReducer,
+        notificationStat: StatReducer,
+        notificationDetail: notificationReducer,
+        allRead: allReadReducer,
+        notificationTab: CustomTabReducer,
+        markSingle: MarkAsSingleReducer,
+        deleteSingle: deleteSingleReducer
     }
 })
 

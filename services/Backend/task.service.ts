@@ -54,6 +54,22 @@ export class taskService {
                 }
             }
         )
+
+        await prisma.project.update(
+            {
+                where: {
+                    id: projectid,
+                    status: {
+                        not: 'CANCELLED'
+                    }
+                },
+                data: {
+                    status: 'ACTIVE',
+                    completedAt: null,
+                }
+            }
+        )
+
         return createTask
     }
 
@@ -92,6 +108,7 @@ export class taskService {
                         assignedTo: {
                             select: {
                                 id: true,
+                                userId: true,
                                 user: {
                                     select: {
                                         id: true,
@@ -116,6 +133,58 @@ export class taskService {
                 }
             )
         ])
+
+        const now = new Date()
+
+        const before = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+        const taskDueSoon = getTasks.filter((elem) =>
+            elem.dueDate &&
+            new Date(elem.dueDate) > now &&
+            new Date(elem.dueDate) <= before &&
+            elem.status !== 'DONE' &&
+            elem.assignedTo
+        )
+
+        if (taskDueSoon.length > 0) {
+
+            const alreadyExist = await prisma.notification.findMany({
+                where: {
+                    OR: taskDueSoon.map((elem) => ({
+                        type: 'TASK_OVERDUE',
+                        title: 'Task Deadline Approaching',
+                        taskId: elem.id,
+                        userId: elem.assignedTo!.userId,
+                        adminId: createdBy.userId
+                    }))
+                },
+                select: {
+                    taskId: true,
+                    userId: true
+                }
+            })
+
+            const newNotification = taskDueSoon.filter((task) => {
+                return !alreadyExist.some(
+                    (notification) =>
+                        notification.taskId === task.id &&
+                        notification.userId === task.assignedTo!.userId
+                )
+            })
+
+            if (newNotification.length > 0) {
+                await prisma.notification.createMany({
+                    data: newNotification.map((task) => ({
+                        adminId: createdBy.userId,
+                        type: 'TASK_OVERDUE',
+                        title: 'Task Deadline Approaching',
+                        message: `Your task "${task.name}" is due within the next 24 hours.`,
+                        userId: task.assignedTo!.userId,
+                        taskId: task.id
+                    }))
+                })
+            }
+        }
+
 
         const totalDone = getTasks.filter(elem => elem.status === 'DONE').length
         const totalTodo = getTasks.filter(elem => elem.status === 'TODO').length
@@ -403,9 +472,32 @@ export class taskService {
                 data: {
                     status,
                     completedAt: new Date()
+                },
+                include: {
+                    assignedTo: true
                 }
+
             }
         )
+
+        if (
+            taskStatusUpdate.assignedTo
+        ) {
+            await prisma.notification.createMany(
+                {
+                    data: {
+                        adminId: admin.userId,
+                        userId: taskStatusUpdate.assignedTo.userId,
+                        title: 'Completed Task',
+                        message: `User completed Task ${taskStatusUpdate.name}`,
+                        taskId: taskid,
+                        type: 'TASK_COMPLETED'
+                    }
+                }
+            )
+        }
+
+
         return taskStatusUpdate
     }
 

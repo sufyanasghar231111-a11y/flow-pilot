@@ -14,7 +14,7 @@ type GetTaskType = {
 
 export default function TaskColumn({ id, title, getTask }: GetTaskType) {
 
-    const filterData = getTask.filter(elem => elem.status === id).length
+    const filterData = getTask?.filter(elem => elem.status === id).length
 
     const { setNodeRef, isOver } = useDroppable({
         id
@@ -43,7 +43,7 @@ export default function TaskColumn({ id, title, getTask }: GetTaskType) {
             <main className="px-3 max-h-[500px] h-full overflow-y-auto py-3  custom-scrollbar overflow-x-hidden flex flex-col gap-2.5">
 
                 {
-                    filterTask.length > 0 ? (
+                    filterTask?.length > 0 ? (
                         filterTask?.map((elem) => (
                             <div key={elem.id} >
                                 <TaskCard elem={elem} />

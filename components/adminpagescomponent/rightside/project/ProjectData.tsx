@@ -6,8 +6,8 @@ export default function ProjectData() {
     const { projectStats } = useProjectStat()
 
     const data = [
-        
-             {
+
+        {
             name: 'Total Projects',
             total: projectStats.totalCounts,
             icon: RiFolderFill,
@@ -41,8 +41,8 @@ export default function ProjectData() {
             new: projectStats.newPending,
             text: 'text-yellow-500',
             hover: 'hover:border-yellow-500/30 hover:bg-yellow-500/5',
-            month: 'new this month'   
+            month: 'new this month'
         }
     ]
-return data
+    return data
 }
