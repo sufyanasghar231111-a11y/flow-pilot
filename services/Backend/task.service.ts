@@ -1,4 +1,5 @@
 import { Priority, TaskStatus } from "@/app/generated/prisma/enums";
+import { generateEmbedding } from "@/libs/ai/embedding";
 import { getAuthUser } from "@/libs/auth/auth";
 import prisma from "@/libs/db";
 import { AppError } from "@/utils/AppError";
@@ -54,6 +55,35 @@ export class taskService {
                 }
             }
         )
+
+        const content = `
+        Task: ${createTask.name}
+        Description: ${createTask.description}
+        Status: ${createTask.status}
+        `
+        const embedding = await generateEmbedding(content)
+
+        await prisma.$executeRaw`
+        INSERT INTO "SearchEmbedding" (
+        "id",
+        "taskId",
+        "content",
+        "embedding",
+        "embeddingModel",
+        "createdAt",
+        "updatedAt"
+        )
+        VALUES (
+        ${crypto.randomUUID()},
+        ${createTask.id},
+        ${content},
+        ${JSON.stringify(embedding)}::vector,
+        'gemini-embedding-2',
+        NOW(),
+        NOW()
+        )
+        `
+
 
         await prisma.project.update(
             {
@@ -659,6 +689,47 @@ export class taskService {
                 }
             }
         )
+
+
+        if (updateTask.name || updateTask.description || updateTask.status) {
+
+            const content = `
+            Task: ${updateTask.name}
+            Description: ${updateTask.description}
+            Status: ${updateTask.status}
+            `
+
+            const embedding = await generateEmbedding(content)
+
+            await prisma.$executeRaw`
+            INSERT INTO "SearchEmbedding" (
+            "id",
+            "taskId",
+            "content",
+            "embedding",
+            "embeddingModel",
+            "createdAt",
+            "updatedAt"
+            )
+            VALUES (
+            ${crypto.randomUUID()},
+            ${updateTask.id},
+            ${content},
+            ${JSON.stringify(embedding)}::vector,
+            'gemini-embedding-2',
+             NOW(),
+             NOW()
+            )
+
+            ON CONFLICT ("taskId")
+            DO UPDATE SET
+            "content" = EXCLUDED."content",
+            "embedding" = EXCLUDED."embedding",
+            "embeddingModel" = EXCLUDED."embeddingModel",
+            "updatedAt" = NOW()
+            `
+        }
+
         return updateTask
     }
 

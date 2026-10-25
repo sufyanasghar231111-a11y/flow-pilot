@@ -62,54 +62,58 @@ export class TeamService {
         const startDate = searchParams.get('startdate')
         const enddate = searchParams.get('enddate')
 
-        const getMember = await prisma.teamMember.findMany(
-            {
-                where: {
-                    adminId: admin.userId,
-                    ...(startDate || enddate ? {
-                        createdAt: {
+        const [getMember] = await Promise.all(
+            [
+                prisma.teamMember.findMany(
+                    {
+                        where: {
+                            adminId: admin.userId,
+                            ...(startDate || enddate ? {
+                                createdAt: {
 
-                            ...(startDate ? { gte: new Date(startDate) } : {}),
-                            ...(enddate ? {
-                                lt: new Date(
-                                    new Date(enddate).getTime() + 24 * 60 * 60 * 1000
-                                )
+                                    ...(startDate ? { gte: new Date(startDate) } : {}),
+                                    ...(enddate ? {
+                                        lt: new Date(
+                                            new Date(enddate).getTime() + 24 * 60 * 60 * 1000
+                                        )
+                                    } : {})
+
+                                }
                             } : {})
-
-                        }
-                    } : {})
-                },
-                select: {
-                    id: true,
-                    createdAt: true,
-                    user: {
+                        },
                         select: {
                             id: true,
-                            username: true,
-                            email: true,
-                            role: true
-                        }
+                            createdAt: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true,
+                                    email: true,
+                                    role: true
+                                }
 
-                    },
-                    // byAdmin: {
-                    //     select: {
-                    //         id: true,
-                    //         username: true,
-                    //         email: true
-                    //     }
+                            },
+                            // byAdmin: {
+                            //     select: {
+                            //         id: true,
+                            //         username: true,
+                            //         email: true
+                            //     }
 
-                    // },
-                    assignedTask: {
-                        select: {
-                            id: true,
-                            name: true
+                            // },
+                            assignedTask: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        },
+                        orderBy: {
+                            createdAt: 'desc'
                         }
                     }
-                },
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            }
+                ),   
+            ]
         )
 
         const totalMember = getMember.filter(elem => elem.user.role === 'USER').length
@@ -127,8 +131,7 @@ export class TeamService {
                 ...elem.user,
                 createdAt: elem.createdAt,
                 assignedTask: elem.assignedTask
-            })),
-
+            }))
         }
 
     }

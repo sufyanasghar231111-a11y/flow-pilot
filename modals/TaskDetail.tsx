@@ -4,7 +4,7 @@ import { useTask } from "@/hooks/useTask"
 import { RiDeleteBinLine, RiEditLine } from "@remixicon/react"
 
 type PropDate = {
-    id: string
+    id?: string
 }
 export default function TaskDetail({ elem }: { elem: PropDate }) {
     const { taskDetailModal, setTaskDetailModal, setTaskDeletionModal, setTaskUpdateModal } = useTaskUi2()
@@ -20,6 +20,7 @@ export default function TaskDetail({ elem }: { elem: PropDate }) {
                         <button
                             type="button"
                             onClick={() => {
+                                if (!elem.id) return
                                 setTaskDetailModal(false)
                                 setTaskUpdateModal(true)
                                 singleTaskById(elem.id)
@@ -37,6 +38,7 @@ export default function TaskDetail({ elem }: { elem: PropDate }) {
                         <button
                             type="button"
                             onClick={() => {
+                                if (!elem.id) return
                                 setTaskDetailModal(false)
                                 setTaskDeletionModal(true)
                                 singleTaskById(elem.id)

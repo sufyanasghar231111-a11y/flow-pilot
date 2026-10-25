@@ -2,27 +2,21 @@
 import { EventTypes, useEventUi2 } from "@/contexts/eventcontext/EventContext";
 import { format, isToday } from "date-fns";
 import CalendarEvent from "./CalendarEvent";
+import { IsEventOnDay } from "@/utils/TimeAgo";
+import { useAuth } from "@/contexts/authContext/AuthContext";
 
 export default function CalendarDay({ day, data }: { day: Date }) {
-
+    const { user } = useAuth()
     const dayEvent = data.filter((elem: { calendarDate: string | number | Date; }) => {
         if (!elem.calendarDate) return false
 
-        return (
-            format(new Date(elem.calendarDate), "yyyy-MM-dd") === format(day, 'yyyy-MM-dd')
-        )
+        return IsEventOnDay(elem.calendarDate, day, user?.timeZone ?? 'Asia/Karachi')
     })
 
     const { setSingleDayModal, setDayDate, setDayData } = useEventUi2()
 
     const dayItems = data.filter((elem: { calendarDate: string | number | Date; }) => {
-        const date = new Date(elem.calendarDate)
-
-        return (
-            date.getFullYear() === day.getFullYear() &&
-            date.getMonth() === day.getMonth() &&
-            date.getDate() === day.getDate()
-        )
+        return IsEventOnDay(elem.calendarDate, day, user?.timeZone ?? 'Asia/Karachi')
     })
 
     function openDayModal(day: Date, items: typeof data) {
@@ -31,12 +25,21 @@ export default function CalendarDay({ day, data }: { day: Date }) {
         setSingleDayModal(true)
     }
 
+    const todayDate = new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        timeZone: user?.timeZone ?? 'Asia/Karachi'
+    }).format(new Date(day))
+
     return (
 
         <div
             className={` lg:min-h-[160px] h-full min-w-0 border-r border-b py-2 px-0.5 transition-colors border-[#252938] hover:bg-[#1A1D2B] bg-[#0e101d]`}
         >
-            <div className={`text-sm px-4 ${isToday(day) ? 'text-blue-500' : ''} py-1 font-semibold mb-1`}>{format(day, "d")}</div>
+            <div className={`text-sm px-4 ${isToday(day) ? 'text-blue-500' : ''} py-1 font-semibold mb-1`}>
+                {
+                    todayDate
+                }
+            </div>
 
             <div className="flex flex-col gap-2 min-w-0">
                 {dayEvent.slice(0, 1).map((elem: EventTypes) => {

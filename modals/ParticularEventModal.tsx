@@ -1,8 +1,9 @@
 "use client"
 
 import { Names } from "@/components/nameComponent/Names"
+import { useAuth } from "@/contexts/authContext/AuthContext"
 import { EventTypes, useEvent, useEventUi, useEventUi2 } from "@/contexts/eventcontext/EventContext"
-import { TimeAgo } from "@/utils/TimeAgo"
+import { TimeAgo, TimeInHour, TimeZone } from "@/utils/TimeAgo"
 import { format } from "date-fns"
 
 export default function ParticularEventModal() {
@@ -15,6 +16,7 @@ export default function ParticularEventModal() {
 
     const { setAddMemberModal } = useEventUi()
     const { getSingleEvent } = useEvent()
+    const { user } = useAuth()
 
     return (
         <>
@@ -35,7 +37,7 @@ export default function ParticularEventModal() {
                                 </p>
 
                                 <h1 className="mt-1 text-xl font-semibold">
-                                    {format(dayDate, "d MMMM yyyy")}
+                                    <TimeZone time={dayDate} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                 </h1>
                             </div>
 
@@ -130,7 +132,7 @@ export default function ParticularEventModal() {
                                                                 {elem.name}
                                                             </p>
                                                             <div className="text-[10px]">
-                                                                {format(new Date(elem.startTime), 'hh:mm a')} - {format(new Date(elem.endTime), 'hh:mm a')}
+                                                                <TimeInHour time={elem.startTime} timeZone={user?.timeZone ?? 'Asia/Karachi'} />-<TimeInHour time={elem.endTime} timeZone={user?.timeZone ?? 'Asia/Karachi'} />
                                                             </div>
                                                         </div>
 
@@ -184,7 +186,7 @@ export default function ParticularEventModal() {
                                                                 {elem.name}
                                                             </p>
                                                             <div className="text-[10px]">
-                                                                <TimeAgo time={elem.deadline} />
+                                                                <TimeZone time={elem?.deadline} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                                             </div>
                                                         </div>
 
@@ -214,7 +216,7 @@ export default function ParticularEventModal() {
                                                                 {elem.name}
                                                             </p>
                                                             <div className="text-[10px]">
-                                                                <TimeAgo time={elem.completedAt} />
+                                                                <TimeZone time={elem?.completedAt} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                                             </div>
                                                         </div>
 

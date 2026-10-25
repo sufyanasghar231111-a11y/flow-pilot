@@ -5,6 +5,7 @@ import React, { createContext, useState, ReactNode, useEffect, useContext, useRe
 import { useLogin } from "../authContext/AuthContext";
 import { useProject } from "@/hooks/useProject";
 import { useAppSelector } from "@/hooks/reduxhooks";
+import useDebounce from "@/hooks/useDebounce";
 
 
 type TaskStatsType = {
@@ -62,6 +63,7 @@ type TaskContextype = {
     deleteTask: (taskid: string) => void;
     updateTask: (taskid: string) => void;
     getAllTask: () => void;
+    setSingleTaskData: React.Dispatch<React.SetStateAction<TaskState | null>>;
 }
 
 
@@ -381,6 +383,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         let position = margin
 
         pdf.addImage(image, 'JPEG', margin, position, imgWidth, imgHeight)
+        // calculate how content fit in first page
         remainingHeight -= pageHeight - margin * 2
 
         while (remainingHeight > 0) {
@@ -395,7 +398,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     }
 
     return (
-        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange, getAllTask }}>
+        <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange, getAllTask, setSingleTaskData }}>
             <taskUiContext1.Provider value={{ projectSelectionModal, setProjectSelectionModal, taskCreationModal, setTaskCreationModal, warningModal, setWarningModal }}>
                 <taskUiContext2.Provider value={{ taskDetailModal, setTaskDetailModal, taskDeletionModal, setTaskDeletionModal, taskUpdateModal, setTaskUpdateModal }}>
                     <reportTaskProvider.Provider value={{ taskReport, handlePdf, printRef }}>

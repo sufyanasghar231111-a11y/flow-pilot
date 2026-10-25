@@ -5,6 +5,7 @@ import { useLogin } from "../authContext/AuthContext";
 import { addMemberApi, countTeamApi, getMemberApi, removeTeamMemberApi } from "@/services/Frontend/teamApi";
 import { userType } from "@/types/usertype";
 import { useAppSelector } from "@/hooks/reduxhooks";
+import useDebounce from "@/hooks/useDebounce";
 
 type TeamType = {
     totalMember: number,
@@ -28,6 +29,17 @@ type UserType = {
 type AdminType = {
     admins: userType
     member: UserType[]
+}
+
+export type SearchTeamMember = {
+    user: {
+        username: string,
+        id: string,
+        email: string,
+        pfp:true,
+        createdAt:string,
+        role:string
+    }
 }
 
 type TeamContextType = {
@@ -102,6 +114,7 @@ export default function TeamContext({ children }: { children: ReactNode }) {
     }, [authReady])
 
     async function getMember() {
+       
         const [res, error] = await tryCatch(getMemberApi(teamStartDate, teamEndDate))
 
         if (error) {

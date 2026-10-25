@@ -20,8 +20,6 @@ export async function POST(request: NextRequest) {
         const { user } = await authService.login(
             body.email, body.password
         )
-        
-
 
         const refreshToken = await createRefreshToken(user.id, user.role)
         const refreshHash = crypto.createHash('sha256').update(refreshToken).digest('hex')

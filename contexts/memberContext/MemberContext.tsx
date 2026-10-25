@@ -1,7 +1,6 @@
 "use client"
 
 import { useProject } from "@/hooks/useProject";
-import { useUser } from "@/hooks/useUser";
 import { AllUser } from "@/services/Frontend/adminApi";
 import { addMemberToProjectApi, removeMemberToProjectApi } from "@/services/Frontend/projectApi";
 import { tryCatch } from "@/utils/tryCatch";
@@ -9,7 +8,6 @@ import React, { createContext, ReactNode, useContext, useEffect, useState } from
 import { useLogin } from "../authContext/AuthContext";
 import { userType } from "@/types/usertype";
 import { useProjectUi1 } from "../projectContext/ProjectContext";
-import { useSearchParams } from "next/navigation";
 
 
 

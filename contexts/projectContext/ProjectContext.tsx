@@ -68,6 +68,7 @@ type ReportType = {
     report: ReportPage
 }
 
+
 export const projectProvider = createContext<ProjectValue | null>(null)
 export const UiProjectProvider1 = createContext<UiType1 | null>(null)
 export const updateProjectProvider = createContext<UpdateProjectType | null>(null)
@@ -136,7 +137,10 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
         totalCancelledPercentage: 0,
         withOutPagination: 0
     })
+
     const { status, startDate, endDate } = useAppSelector((state) => state.filterData)
+    const { searchInput } = useAppSelector((state) => state.searchInput)
+    const { searchPage } = useAppSelector((state) => state.searchPage)
 
     const searchParams = useSearchParams()
     const projectPage = Number(searchParams.get('page')) || 1
@@ -205,7 +209,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
             withOutPagination: res?.data.withOutPagination
         })
 
-    }, [endDate, projectPage, startDate, status])
+    }, [projectPage, status, startDate, endDate,])
 
     useEffect(() => {
         if (!authReady) return
@@ -309,7 +313,7 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
 
 
     const projectValue = useMemo(() => ({
-        getProject, getAllProject, singleProjectData, getSingleProject, filterDate
+        getProject, getAllProject, singleProjectData, getSingleProject, filterDate, setSingleProjectData
     }), [getAllProject, getProject, singleProjectData, getSingleProject, filterDate])
 
     const StatsProvider = useMemo(() => ({

@@ -3,6 +3,7 @@ import prisma from "@/libs/db";
 import { NextRequest } from "next/server";
 import { getAuthUser } from "../../libs/auth/auth";
 import { ProjectStatus } from "@/app/generated/prisma/enums";
+import { generateEmbedding } from "@/libs/ai/embedding";
 
 export const projectService = {
 
@@ -30,6 +31,32 @@ export const projectService = {
             }
         )
 
+        const content = `
+        Project: ${creatProject.name}
+        Description: ${creatProject.description}
+        Status: ${creatProject.status}
+        `
+        const embedding = await generateEmbedding(content)
+
+        await prisma.$executeRaw`
+       INSERT INTO "SearchEmbedding" (
+       "id",
+       "projectId",
+       "content",
+       "embedding",
+       "embeddingModel",
+       "updatedAt" 
+       )
+       VALUES (
+       ${crypto.randomUUID()},
+       ${creatProject.id},
+       ${content},
+       ${JSON.stringify(embedding)}::vector,
+        'gemini-embedding-2',
+        NOW()
+       )
+       `
+
         return creatProject
 
     },
@@ -46,6 +73,7 @@ export const projectService = {
         const limit = 8
         const skip = (page - 1) * limit
 
+
         const findAdmin = await prisma.user.findUnique(
             {
                 where: {
@@ -57,6 +85,8 @@ export const projectService = {
         if (!findAdmin) {
             throw new Error("Only Admin Can Get")
         }
+
+
 
         const where = {
             adminId: admin.userId,
@@ -74,10 +104,12 @@ export const projectService = {
                         } : {})
                     }
                 } : {}
-            )
+            ),
+
         }
 
         const [findProject, totalProject, withOutPaginations] = await Promise.all([
+
             prisma.project.findMany(
                 {
                     where,
@@ -282,6 +314,41 @@ export const projectService = {
                 }
             }
         )
+
+        if (updateProject.name || updateProject.description || updateProject.status) {
+            const content = `
+            Project: ${updateProject.name}
+            Description: ${updateProject.description}
+            Status: ${updateProject.status}
+            `
+            const embedding = await generateEmbedding(content)
+
+            await prisma.$executeRaw`
+            INSERT INTO "SearchEmbedding" (
+            "id",
+            "projectId",
+            "content",
+            "embedding",
+            "embeddingModel",
+            "updatedAt"
+            )
+            VALUES (
+            ${crypto.randomUUID()},
+            ${updateProject.id},
+            ${content},
+            ${JSON.stringify(embedding)}::vector,
+            'gemini-embedding-2',
+            NOW()
+            )
+
+            ON CONFLICT ("projectId")
+            DO UPDATE SET
+            "content" = EXCLUDED."content",
+            "embedding" = EXCLUDED."embedding",
+            "embeddingModel" = EXCLUDED."embeddingModel",
+            "updatedAt" = NOW()
+            `
+        }
 
         const change: string[] = []
 
@@ -541,7 +608,48 @@ export const projectService = {
                             }
                         },
                     },
-                    tasks: true
+                    tasks: {
+                        select: {
+                            id: true,
+                            name: true,
+                            description: true,
+                            status: true,
+                            priority: true,
+                            dueDate: true,
+                            assignedTo: {
+                                select: {
+                                    id: true,
+                                    user: {
+                                        select: {
+                                            id: true,
+                                            username: true,
+                                            email: true
+                                        }
+                                    }
+                                }
+                            },
+                            project: {
+                                select: {
+                                    projectmembers: {
+                                        select: {
+                                            id: true,
+                                            user: {
+                                                select: {
+                                                    user: {
+                                                        select: {
+                                                            id: true,
+                                                            username: true,
+                                                            email: true
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
 
             }

@@ -127,7 +127,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
     const [months, setMonths] = useState<string | Date>(new Date())
     const [singleDayModal, setSingleDayModal] = useState<boolean>(false)
     const [dayData, setDayData] = useState<EventType[]>([])
-    const [dayDate, setDayDate] = useState<null | Date>(null)
+    const [dayDate, setDayDate] = useState<Date | null>(null)
     const [minCalendarMonths, setMinCalendarMonths] = useState<Date>(new Date())
     const { type, eventendDate, eventstartDate } = useAppSelector((state) => state.filterEvent)
     const [eventReport, setEventReport] = useState({

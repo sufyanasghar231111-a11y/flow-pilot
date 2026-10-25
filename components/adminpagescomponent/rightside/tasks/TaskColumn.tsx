@@ -1,6 +1,6 @@
 "use client"
 
-import { RiAddLine, RiInbox2Line, RiMoreLine } from "@remixicon/react"
+import { RiMoreLine } from "@remixicon/react"
 import { useDroppable } from "@dnd-kit/core";
 import TaskCard from "./TaskCard";
 import { TaskState } from "@/contexts/taskContext/TaskContext";

@@ -47,5 +47,6 @@ export type ProjectValue = {
     getAllProject: () => void;
     singleProjectData: UpdatePropType | null;
     getSingleProject: (id: string) => void;
-    filterDate: string
+    filterDate: string;
+    setSingleProjectData:React.Dispatch<React.SetStateAction<UpdatePropType | null>>
 }

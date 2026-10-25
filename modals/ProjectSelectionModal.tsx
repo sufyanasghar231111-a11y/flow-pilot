@@ -24,7 +24,7 @@ export default function ProjectSelectionModal() {
 
     const { getProject, getSingleProject } = useProject()
     const [searchInput, setSearchInput] = useState('')
-    const filterData = getProject.filter((elem: Name) => elem.name.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))    
+    const filterData = getProject.filter((elem: Name) => elem.name.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))
 
     return (
         <>

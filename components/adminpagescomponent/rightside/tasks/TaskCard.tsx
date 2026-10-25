@@ -1,11 +1,13 @@
 import { Names } from "@/components/nameComponent/Names";
-import { TimeAgo } from "@/utils/TimeAgo";
+import { TimeAgo, TimeZone } from "@/utils/TimeAgo";
 import { RiFileCheckFill, RiKanbanView, RiMoreLine, RiTimeLine } from "@remixicon/react";
 import { CSS } from '@dnd-kit/utilities'
 import { useDraggable } from "@dnd-kit/core";
 import TaskDetail from "@/modals/TaskDetail";
 import { useTaskUi2 } from "@/contexts/taskContext/TaskContext";
 import { Task } from "@/app/generated/prisma/client";
+import { useAuth } from "@/contexts/authContext/AuthContext";
+import Link from "next/link";
 
 
 
@@ -30,7 +32,9 @@ export default function TaskCard({ elem }: { elem: Task }) {
 
         setTaskDetailModal(prev => prev === id ? null : id)
     }
-    
+
+    const { user } = useAuth()
+
 
     return (
 
@@ -38,7 +42,9 @@ export default function TaskCard({ elem }: { elem: Task }) {
 
             <div className="flex items-start justify-between gap-2 relative">
                 <div className="text-sm font-medium text-gray-100 leading-5">
-                    {elem.name}
+                    <Link href={`/admin/tasks/${elem.id}`}>
+                        {elem.name}
+                    </Link>
                 </div>
 
                 <div onClick={() => { handleOpen(elem.id) }} className="text-gray-500 hover:text-gray-200 transition-colors cursor-pointer p-1.5 ">
@@ -50,9 +56,10 @@ export default function TaskCard({ elem }: { elem: Task }) {
 
             <div className="pt-2 flex items-center gap-2 text-gray-400">
                 <RiKanbanView className="w-4 h-4 text-gray-500" />
-
                 <div className="text-xs truncate">
-                    {elem.description}
+                    <Link href={`/admin/tasks/${elem.id}`}>
+                        {elem.description}
+                    </Link>
                 </div>
             </div>
 
@@ -69,7 +76,7 @@ export default function TaskCard({ elem }: { elem: Task }) {
                         <h1 className="text-[11px] text-gray-400">
                             {
                                 elem.dueDate && (
-                                    <TimeAgo time={elem.dueDate} />
+                                    <TimeZone time={elem?.dueDate} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                 )
                             }
                         </h1>
@@ -82,7 +89,7 @@ export default function TaskCard({ elem }: { elem: Task }) {
                                 <h1 className="text-[11px] text-gray-400">
                                     {
                                         elem.completedAt && (
-                                            <TimeAgo time={elem.completedAt} />
+                                            <TimeZone time={elem?.completedAt} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                         )
                                     }
                                 </h1>

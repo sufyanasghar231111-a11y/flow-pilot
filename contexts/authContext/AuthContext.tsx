@@ -1,9 +1,11 @@
 "use client"
 
 import { removeAccessToken, setAccessToken } from "@/libs/axios/accessTokenGeneration";
-import { loginApi, logoutApi, refreshToken, registerApi } from "@/services/Frontend/authApi";
+import { loginApi, logoutApi, profileImageApi, refreshToken, registerApi, updateAdminProfile } from "@/services/Frontend/authApi";
+import { timeZoneApi } from "@/services/Frontend/settingsApi";
 import { userType } from "@/types/usertype";
 import { tryCatch } from "@/utils/tryCatch";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
@@ -45,10 +47,32 @@ type RegisterType = {
     handleRegisterChange: (e: { target: { name: string, value: string } }) => void
 }
 
+
+type UpdateType = {
+    handleUpdate: () => void;
+    updatePfp: File | null;
+    setUpdatePfp: React.Dispatch<React.SetStateAction<File | null>>;
+    updateUsername: string
+    setUpdateUsername: React.Dispatch<React.SetStateAction<string>>;
+    updateEmail: string
+    setUpdateEmail: React.Dispatch<React.SetStateAction<string>>;
+    updatePreview: string | null
+    setUpdatePreview: React.Dispatch<React.SetStateAction<string | null>>;
+    pfpSize: boolean;
+    pfpType: boolean;
+    alreadyExist: boolean;
+    setAlreadyExist: React.Dispatch<React.SetStateAction<boolean>>;
+    setPfpSize: React.Dispatch<React.SetStateAction<boolean>>;
+    setPfpType: React.Dispatch<React.SetStateAction<boolean>>;
+    removePfp: boolean
+    setRemovePfp: React.Dispatch<React.SetStateAction<boolean>>
+}
+
 const authProvider = createContext<authUser | null>(null)
 const loginProvider = createContext<AuthContextType | null>(null)
 const logoutProvider = createContext<LogoutType | null>(null)
 const registerProvider = createContext<RegisterType | null>(null)
+const updateProvider = createContext<UpdateType | null>(null)
 
 export function AuthContext({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<userType | null>(null)
@@ -66,6 +90,14 @@ export function AuthContext({ children }: { children: ReactNode }) {
 
     const [loginLoading, setLoginLoading] = useState<boolean>(false)
     const [authReady, setAuthReady] = useState(false)
+    const [updatePfp, setUpdatePfp] = useState<File | null>(null)
+    const [updateUsername, setUpdateUsername] = useState<string>('')
+    const [updateEmail, setUpdateEmail] = useState<string>('')
+    const [removePfp, setRemovePfp] = useState<boolean>(false)
+    const [updatePreview, setUpdatePreview] = useState<string | null>(null)
+    const [pfpSize, setPfpSize] = useState(false)
+    const [pfpType, setPfpType] = useState(false)
+    const [alreadyExist, setAlreadyExist] = useState(false)
 
     function handleChangeLogin(e: { target: { name: string; value: string; }; }) {
         setLogin(prev => ({
@@ -124,26 +156,27 @@ export function AuthContext({ children }: { children: ReactNode }) {
         setLoginLoading(false)
     }
 
-    useEffect(() => {
-        const initailization = async () => {
-            const [res, error] = await tryCatch(refreshToken())
+    const initailization = async () => {
+        const [res, error] = await tryCatch(refreshToken())
 
-            if (!res?.data.accessToken) {
-                setAccessToken(null)
-                return
-            }
-
-            if (error) {
-                setAccessToken(null)
-                setUser(null)
-                console.log(error)
-            }
-
-            setAccessToken(res?.data.accessToken)
-            setUser(res?.data.user)
-            setAuthReady(true)
+        if (!res?.data.accessToken) {
+            setAccessToken(null)
+            return
         }
 
+        if (error) {
+            setAccessToken(null)
+            setUser(null)
+            console.log(error)
+        }
+
+        setAccessToken(res?.data.accessToken)
+        setUser(res?.data.user)
+        setAuthReady(true)
+    }
+    useEffect(() => {
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         initailization()
     }, [])
 
@@ -169,12 +202,91 @@ export function AuthContext({ children }: { children: ReactNode }) {
         }))
     }
 
+    async function handleUpdate() {
+
+        const formData = new FormData()
+        if (updatePfp) {
+            formData.append('pfp', updatePfp)
+        }
+        formData.append('username', updateUsername)
+        formData.append('email', updateEmail)
+        formData.append('removePfp', String(removePfp))
+
+        const [res, error] = await tryCatch(updateAdminProfile(formData))
+
+        if (error) {
+            if (axios.isAxiosError(error) && error?.response?.status === 409) {
+                setAlreadyExist(true)
+            }
+            if (axios.isAxiosError(error) && error?.response?.status === 404) {
+                setPfpType(true)
+            }
+            if (axios.isAxiosError(error) && error?.response?.status === 400) {
+                setPfpSize(true)
+            }
+
+            return
+        }
+
+        const updateAdmin = res?.data?.updateAdminProfile
+        await initailization()
+        if (updateAdmin) {
+            setUser(prev => {
+                if (!prev) return prev
+
+                return {
+                    ...prev,
+                    username: updateAdmin.username ?? prev.username,
+                    email: updateAdmin.email ?? prev.email,
+                    pfp: updateAdmin.pfp?.startsWith("https://") ? updateAdmin.pfp : prev.pfp
+                }
+            })
+        }
+        setUpdatePreview(null)
+
+    }
+
+    useEffect(() => {
+        if (!user?.pfp) return
+
+        async function profileImage() {
+            const [res, error] = await tryCatch(profileImageApi())
+
+            if (error) {
+                console.log(error);
+                return
+            }
+
+            setUser(prev => {
+                if (!prev?.pfp) return prev
+
+                return {
+                    ...prev,
+                    pfp: res?.data.signedUrl
+                }
+            })
+
+        }
+
+        const interval = setInterval(
+            profileImage,
+            50 * 60 * 1000
+        )
+
+        return () => clearInterval(interval)
+
+    }, [user?.pfp])
+
+
+
     return (
         <authProvider.Provider value={{ user, setUser }}>
             <loginProvider.Provider value={{ login, setLogin, handleChangeLogin, handleLogin, loginLoading, authReady }}>
                 <logoutProvider.Provider value={{ handleLogout }}>
                     <registerProvider.Provider value={{ handleSubmit, register, setRegister, handleRegisterChange }}>
-                        {children}
+                        <updateProvider.Provider value={{ handleUpdate, setUpdateEmail, setUpdatePfp, setUpdateUsername, updateEmail, updatePfp, updateUsername, updatePreview, setUpdatePreview, pfpType, pfpSize, alreadyExist, setAlreadyExist, setPfpSize, setPfpType, removePfp, setRemovePfp }}>
+                            {children}
+                        </updateProvider.Provider>
                     </registerProvider.Provider>
                 </logoutProvider.Provider>
             </loginProvider.Provider>
@@ -215,6 +327,16 @@ export function useRegister() {
 
     if (!context) {
         throw new Error('Register context is not found')
+    }
+
+    return context
+}
+
+export function useUpdate() {
+    const context = useContext(updateProvider)
+
+    if (!context) {
+        throw new Error('updateProvider context is must inside useUpdate')
     }
 
     return context

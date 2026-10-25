@@ -65,14 +65,15 @@ export default function AdminLeftSide() {
     const dispatch = useAppDispatch()
 
 
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(setStatus('All'))
         dispatch(setStartDate(''))
         dispatch(setEndDate(''))
-    },[dispatch, pathname])
+
+    }, [dispatch, pathname])
 
     return (
-        <div className="w-[21%] bg-[#0A0C16] text-white h-full fixed ">
+        <div className="w-[21%] bg-[#0A0C16] text-white h-full fixed">
             <header className="px-7 py-4">
                 <div className="flex items-center gap-2"><Image src={logo3} alt="FlowPilot" /> <h1 className="text-xl font-semibold tracking-tight">FlowPilot</h1></div>
                 <div className="pt-7 px-4">

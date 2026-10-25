@@ -1,16 +1,15 @@
 "use client"
 import { Names } from "@/components/nameComponent/Names";
-import { useLogin } from "@/contexts/authContext/AuthContext";
+import { useAuth, useLogin } from "@/contexts/authContext/AuthContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxhooks";
 import { DataType } from "@/store/slices/RecentSlice";
 import { recentThunk } from "@/store/thunks/recentThunk";
 import { RiArrowRightLongLine } from "@remixicon/react";
-import { formatDistanceToNowStrict } from "date-fns";
 import { useEffect } from "react";
 
 export default function RecentActivity() {
     const { authReady } = useLogin()
-
+    const { user } = useAuth()
     const dispatch = useAppDispatch();
 
     const { recentData, loading, error } = useAppSelector(
@@ -88,7 +87,17 @@ export default function RecentActivity() {
                             </div>
 
                             <div className="text-[11px] text-gray-500 whitespace-nowrap">
-                                {formatDistanceToNowStrict(new Date(elem.data), { addSuffix: true })}
+                                <p>
+                                    {new Intl.DateTimeFormat("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                        timeZone: user?.timeZone ?? "Asia/Karachi",
+                                    }).format(new Date(elem.data))}
+                                </p>
                             </div>
                         </div>
                     </div>

@@ -11,7 +11,7 @@ export const getProjectApi = (projectPage: number, status: string, startDate: st
             page: projectPage,
             status: status,
             startdate: startDate,
-            enddate: endDate
+            enddate: endDate,
         }
     })
 }

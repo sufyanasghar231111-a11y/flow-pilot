@@ -1,11 +1,14 @@
 export type userType = {
     createdAt: string
-    id:string,
-    username:string,
-    email:string,
-    password:string,
-    role:string
-    length:number
+    id: string,
+    username: string,
+    email: string,
+    password: string,
+    role: string
+    length: number,
+    pfp?: string | '',
+    timeZone?: string,
+    dateFormat?: string
 }
 
 

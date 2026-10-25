@@ -2,11 +2,12 @@
 import { RiDeleteBinLine, RiMoreLine, RiTeamLine } from "@remixicon/react";
 import TeamDetailHeader from "./TeamDetailHeader";
 import { useTeam, useTeamUi1 } from "@/contexts/teamContext/TeamContext";
-import { TimeAgo } from "@/utils/TimeAgo";
+import { TimeAgo, TimeZone } from "@/utils/TimeAgo";
 import { Names } from "@/components/nameComponent/Names";
 import { useState } from "react";
 import { useAppSelector } from "@/hooks/reduxhooks";
 import { currentMonth } from "../reports/TaskShowReport";
+import { useAuth } from "@/contexts/authContext/AuthContext";
 
 export default function AllTeamDetail({ page }: { page: string }) {
     const { memberData, removeTeamMember } = useTeam()
@@ -14,7 +15,7 @@ export default function AllTeamDetail({ page }: { page: string }) {
     const filterDate = memberData?.member.filter(elem => elem.username.trim().toLowerCase().includes(searchInput.trim().toLowerCase()))
     const { deleteMemberModal, setDeleteMemberModal } = useTeamUi1()
     const { teamStartDate, teamEndDate } = useAppSelector((state) => state.filterTeam)
-
+    const { user } = useAuth()
     function handleOpen(id: string) {
         setDeleteMemberModal(prev => prev === id ? null : id)
     }
@@ -82,7 +83,7 @@ export default function AllTeamDetail({ page }: { page: string }) {
                                 </div>
 
                                 <div className="text-sm text-gray-400">
-                                    <TimeAgo time={elem.createdAt} />
+                                    <TimeZone time={elem?.createdAt} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
                                 </div>
 
                                 <div className="flex justify-center relative">

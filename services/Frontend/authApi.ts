@@ -12,6 +12,14 @@ export const logoutApi = () => {
     return refreshApi.get(`/logout/logout-all-device`)
 }
 
-export const registerApi = (data: {username:string, email:string, password:string}) => {
+export const registerApi = (data: { username: string, email: string, password: string }) => {
     return api.post(`/auth/register`, data)
+}
+
+export const updateAdminProfile = (data: FormData) => {
+    return api.patch('/auth/update-profile', data)
+}
+
+export const profileImageApi = () => {
+    return api.get('/auth/profile-image')
 }

@@ -8,6 +8,7 @@ import ParticularEventModal from "@/modals/ParticularEventModal";
 import ProjectCreationModal from "@/modals/ProjectCreationModal";
 import ProjectSelectionModal from "@/modals/ProjectSelectionModal";
 import ProjectUpdateModal from "@/modals/ProjectUpdateModal";
+import SearchInputModal from "@/modals/SearchInputmodal";
 import SureForDelete from "@/modals/SureForDelete";
 import SureForTaskDelete from "@/modals/SureForTaskDelete";
 import TaskCreationModal from "@/modals/TaskCreationModal";
@@ -58,6 +59,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <ParticularEventModal />
 
             <AddTeamMember />
+
+            <SearchInputModal />
 
             <div className="w-[21%] h-[100%]">
                 <AdminLeftSide />

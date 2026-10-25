@@ -4,6 +4,8 @@ import recentReducer from '@/store/slices/RecentSlice'
 import weeklyReducer from '@/store/slices/WeeklySlice'
 import { comparisonReducer, customTabReducer, filterEventReducer, filterReducer, filterTaskReducer, filterTeamReducer, showReportReducer, taskShowReducer, teamShowReducer } from "./slices/reportSlice";
 import { allReadReducer, CustomTabReducer, deleteSingleReducer, MarkAsSingleReducer, notificationReducer, StatReducer } from "./slices/NotificationSlice";
+import { PfpReducer } from "./slices/PfpSlice";
+import { searchInputReducer, searchModalReducer, searchPageReducer, themeReducer } from "./slices/ThemeSlice";
 
 export const store = configureStore({
     reducer: {
@@ -23,7 +25,12 @@ export const store = configureStore({
         allRead: allReadReducer,
         notificationTab: CustomTabReducer,
         markSingle: MarkAsSingleReducer,
-        deleteSingle: deleteSingleReducer
+        deleteSingle: deleteSingleReducer,
+        PfpUrl: PfpReducer,
+        themeReducer: themeReducer,
+        searchInput: searchInputReducer,
+        searchModal: searchModalReducer,
+        searchPage: searchPageReducer
     }
 })
 

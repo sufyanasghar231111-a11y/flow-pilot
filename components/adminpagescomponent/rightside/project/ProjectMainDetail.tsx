@@ -1,10 +1,12 @@
 import { RiAddFill, RiDeleteBin5Line, RiEdit2Fill } from "@remixicon/react";
 import { Names } from "@/components/nameComponent/Names";
-import { TimeAgo } from "@/utils/TimeAgo";
+import { TimeAgo, TimeZone } from "@/utils/TimeAgo";
 import { useProject } from "@/hooks/useProject";
 import { useProjectDelete, useProjectUi1, useUpdateProject } from "@/contexts/projectContext/ProjectContext";
 import { userType } from "@/types/usertype";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/authContext/AuthContext";
+import Link from "next/link";
 
 
 
@@ -41,10 +43,12 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
     const { setUpdateProjectModal } = useUpdateProject()
     const { setAddMemberModal } = useProjectUi1()
     const { setProjectDeleteModal } = useProjectDelete()
+    const { user } = useAuth()
 
-    const overDue = (format(elem.deadline, 'yyyy-MM-dd') < format(new Date(), 'yyyy-MM-dd')) && elem.status !== 'COMPLETE'
+    const overDue = (format(elem.deadline, 'yyyy-MM-dd') < format(new Date(), 'yyyy-MM-dd')) && elem.status !== 'COMPLETE' && elem.status !== 'CANCELLED'
 
     return (
+
         <div key={elem.id} className={`min-h-14 grid grid-cols-[0.5fr_2fr_3fr_1.2fr_1.3fr_1.3fr_1.6fr_1fr_2.4fr_1fr] items-center border-b border-[#252938]  px-4 text-sm text-gray-300`}>
 
             <div className="text-gray-500">
@@ -52,11 +56,15 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
             </div>
 
             <div className="font-medium text-xs text-white truncate pr-4">
-                {elem.name}
+                <Link href={`/admin/projects/${elem.id}`}>
+                    {elem.name}
+                </Link>
             </div>
 
             <div className="text-gray-400 truncate pr-4">
-                {elem.description}
+                <Link href={`/admin/projects/${elem.id}`}>
+                    {elem.description}
+                </Link>
             </div>
 
             <div>
@@ -69,11 +77,11 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
             </div>
 
             <div className="text-gray-400 text-[11px] pl-2">
-                <TimeAgo time={elem.startDate} />
+                <TimeZone time={elem?.startDate} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
             </div>
 
             <div className="text-gray-400 text-[11px]">
-                <TimeAgo time={elem.deadline} />
+                <TimeZone time={elem?.deadline} timeZone={user?.timeZone ?? 'Asia/Karachi'} dateFormat={user?.dateFormat ?? 'YYYY-MM-DD'} />
             </div>
 
             <div className="flex items-center gap-2 pr-4">
@@ -100,8 +108,9 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
 
                     })
                 }
-                <button onClick={() => {
-
+                <button onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     setAddMemberModal(true)
                     getSingleProject(elem.id)
                 }} className="ml-2 flex h-6 w-6 items-center justify-center rounded-full border border-[#252938] text-gray-400 transition hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-400">
@@ -111,14 +120,18 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
             </div>
 
             <div className="flex items-center justify-center gap-2">
-                <button onClick={() => {
+                <button onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     getSingleProject(elem.id)
                     setUpdateProjectModal(true)
                 }} className="rounded-md p-1.5 text-gray-400 transition hover:bg-blue-500/10 hover:text-blue-400">
                     <RiEdit2Fill className="h-4 w-4" />
                 </button>
 
-                <button onClick={() => {
+                <button onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     setProjectDeleteModal(true)
                     getSingleProject(elem.id)
                 }} className="rounded-md p-1.5 text-gray-400 transition hover:bg-red-500/10 hover:text-red-400">
@@ -126,6 +139,6 @@ export default function ProjectMainDetail({ index, elem, progressBar, totalTask,
                 </button>
             </div>
 
-        </div>
+        </div >
     )
 }

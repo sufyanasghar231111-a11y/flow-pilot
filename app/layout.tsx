@@ -10,6 +10,8 @@ import EventContext from "@/contexts/eventcontext/EventContext";
 import TeamContext from "@/contexts/teamContext/TeamContext";
 import AnalyticsContext from "@/contexts/analyticsContext/AnalyticsContext";
 import StoreProvider from "@/store/StoreProvider";
+import SettingContext from "@/contexts/setting/SettingContext";
+import SearchContext from "@/contexts/SearchContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,9 +44,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     <EventContext>
                       <TeamContext>
                         <AnalyticsContext>
-                          <div>
-                            {children}
-                          </div>
+                          <SettingContext>
+                            <SearchContext>
+                              <div>
+                                {children}
+                              </div>
+                            </SearchContext>
+                          </SettingContext>
                         </AnalyticsContext>
                       </TeamContext>
                     </EventContext>

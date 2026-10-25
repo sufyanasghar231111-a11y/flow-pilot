@@ -5,6 +5,9 @@ import { jwtVerify } from "jose"
 import { NextRequest } from "next/server"
 import { getAuthUser } from "../../libs/auth/auth"
 import prisma from "@/libs/db"
+import { AppError } from "@/utils/AppError"
+import { ProfileUpdate } from "../supabase/ProfileUpload.service"
+import { createFileSignedUrl } from "@/libs/createFileSignedUrl"
 
 
 export const authService = {
@@ -77,8 +80,6 @@ export const authService = {
             throw new Error("Password is incorrect ")
         }
 
-
-
         return { user }
     },
 
@@ -129,6 +130,104 @@ export const authService = {
         }
 
         return findUser
+
+    },
+
+    async updateProfile(request: NextRequest, username?: string, email?: string, pfp?: File, removePfp?: boolean) {
+        const admin = await getAuthUser(request)
+
+        let pfpPath: string | undefined
+
+        if (removePfp && !(pfp instanceof File)) {
+            await prisma.user.update(
+                {
+                    where: {
+                        id: admin.userId
+                    },
+                    data: {
+                        pfp: ''
+                    }
+                }
+            )
+        }
+        else if (pfp && pfp.size > 0) {
+            const allowedType: Record<string, string> = {
+                "image/jpeg": "jpg",
+                "image/png": "png",
+                "image/webp": "webp",
+            }
+
+            const extension = allowedType[pfp.type]
+
+            if (!extension) {
+                throw new AppError('Only JPEG, PNG, and WebP images are allowed', 404)
+            }
+
+            if (pfp.size > 2 * 1024 * 1024) {
+                throw new AppError('Image must be less than 2 mb', 400)
+            }
+
+            const buffer = Buffer.from(await pfp.arrayBuffer())
+
+            pfpPath = await ProfileUpdate(
+                buffer,
+                pfp.type,
+                admin.userId,
+                extension
+            )
+
+        }
+
+        const find = await prisma.user.findFirst(
+            {
+                where: {
+                    id: {
+                        not: admin.userId
+                    },
+                    email: email
+                }
+            }
+        )
+
+        if (find) {
+            throw new AppError('Email is already exist', 409)
+        }
+
+        const updateAdminProfile = await prisma.user.update(
+            {
+                where: {
+                    id: admin.userId,
+                },
+                data: {
+                    ...(username !== undefined && { username }),
+                    ...(email !== undefined && { email }),
+                    ...(pfp !== undefined && { pfp: pfpPath }),
+                }
+            }
+        )
+
+        return updateAdminProfile
+
+    },
+
+    async ProfileImage(request: NextRequest) {
+        const admin = await getAuthUser(request)
+
+        const user = await prisma.user.findUnique(
+            {
+                where: {
+                    id: admin.userId
+                }
+            }
+        )
+
+        if (!user) {
+            throw new AppError('Unauthorized user', 401)
+        }
+
+        const signedUrl = user.pfp ? await createFileSignedUrl(user.pfp) : null
+
+        return signedUrl
 
     }
 

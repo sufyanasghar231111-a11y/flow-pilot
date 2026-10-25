@@ -1,5 +1,8 @@
 import { useLogin } from "@/contexts/authContext/AuthContext";
+import { useTeam } from "@/contexts/teamContext/TeamContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxhooks";
+import { useProject, useProjectStat } from "@/hooks/useProject";
+import { useTask } from "@/hooks/useTask";
 import { reportCompareThunk } from "@/store/thunks/thunks";
 import { RiCheckboxCircleFill, RiFolderFill, RiListOrdered, RiTaskFill, RiTaskLine, RiTeamFill } from "@remixicon/react";
 import { useEffect } from "react";
@@ -17,9 +20,14 @@ export default function ReportStats() {
     const { authReady } = useLogin()
     const dispatch = useAppDispatch()
 
-    const { lastMonth} = useAppSelector(
+    const { lastMonth } = useAppSelector(
         (state) => state.comparison
     )
+    const { taskStats } = useTask()
+    const total = taskStats.activeTask + taskStats.completedTask + taskStats.overDue + taskStats.pendingTask
+
+    const { teamMember } = useTeam()
+    const { projectStats } = useProjectStat()
 
 
     useEffect(() => {
@@ -27,12 +35,11 @@ export default function ReportStats() {
         dispatch(reportCompareThunk())
     }, [dispatch, authReady])
 
-   
 
     const data = [
         {
             name: 'Total Projects',
-            total: 10,
+            total: projectStats.totalCounts,
             icon: RiFolderFill,
             lastmonth: `${lastMonth.percentageProject}`,
             text: 'text-indigo-400',
@@ -40,7 +47,7 @@ export default function ReportStats() {
         },
         {
             name: 'Completed Projects',
-            total: 10,
+            total: projectStats.totalComplete,
             icon: RiCheckboxCircleFill,
             lastmonth: `${lastMonth.projectCompleted}`,
             text: 'text-emerald-400',
@@ -48,7 +55,7 @@ export default function ReportStats() {
         },
         {
             name: 'Total Tasks',
-            total: 10,
+            total: total,
             icon: RiListOrdered,
             lastmonth: `${lastMonth.percentageTask}`,
             text: 'text-blue-400',
@@ -56,7 +63,7 @@ export default function ReportStats() {
         },
         {
             name: 'Completed Tasks',
-            total: 10,
+            total: taskStats.completedTask,
             icon: RiTaskFill,
             lastmonth: `${lastMonth.taskCompleted}`,
             text: 'text-cyan-400',
@@ -64,7 +71,7 @@ export default function ReportStats() {
         },
         {
             name: 'Team Members',
-            total: 10,
+            total: teamMember.totalMember,
             icon: RiTeamFill,
             lastmonth: `${lastMonth.percentageTeam}`,
             text: 'text-violet-400',

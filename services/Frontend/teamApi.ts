@@ -12,7 +12,7 @@ export const getMemberApi = (teamStartDate: string, teamEndDate: string) => {
     return api.get(`/teams/get-member`, {
         params: {
             startdate: teamStartDate,
-            enddate: teamEndDate
+            enddate: teamEndDate,
         }
     })
 }

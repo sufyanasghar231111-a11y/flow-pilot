@@ -6,11 +6,18 @@ import { authService } from "@/services/Backend/auth.service";
 import { createRefreshToken } from "@/libs/auth/refreshToken";
 import prisma from "@/libs/db";
 import { createAccessToken } from "@/libs/auth/accessToken";
+import { createFileSignedUrl } from "@/libs/createFileSignedUrl";
 
 export async function GET(request: NextRequest) {
     try {
 
         const { user } = await authService.refreshToken()
+
+        let signedUrl: string | null = null;
+
+        if (user?.pfp) {
+            signedUrl = await createFileSignedUrl(user?.pfp)
+        }
 
         const forwardedfor = request.headers.get('x-forwarded-for')
         const ip = forwardedfor?.split(',')[0].trim() || 'Unknown'
@@ -48,7 +55,10 @@ export async function GET(request: NextRequest) {
         return Response.json(
             {
                 message: "Successfull create Token",
-                user,
+                user: {
+                    ...user,
+                    pfp: signedUrl
+                },
                 accessToken
             },
             {

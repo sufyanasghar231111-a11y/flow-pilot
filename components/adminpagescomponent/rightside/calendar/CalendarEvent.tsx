@@ -1,5 +1,7 @@
 import { Names } from "@/components/nameComponent/Names";
+import { useAuth } from "@/contexts/authContext/AuthContext";
 import { useEvent, useEventUi } from "@/contexts/eventcontext/EventContext";
+import { TimeInHour } from "@/utils/TimeAgo";
 import { RiAddLine } from "@remixicon/react";
 import { format } from "date-fns";
 
@@ -7,6 +9,7 @@ import { format } from "date-fns";
 export default function CalendarEvent({ elem }) {
     const { setAddMemberModal } = useEventUi()
     const { getSingleEvent } = useEvent()
+    const { user } = useAuth()
     return (
         <div key={`${elem.types}-${elem.id}`} className="flex flex-col gap-1.5 min-w-0">
             <div
@@ -26,7 +29,7 @@ export default function CalendarEvent({ elem }) {
                     <div className="min-w-0 flex-1">
                         <h1 className="text-xs font-medium truncate">{elem.name}</h1>
                         <div className="text-[10px] opacity-80 truncate">
-                            {format(new Date(elem.startTime), "hh:mm a")}-{format(new Date(elem.endTime), "hh:mm a")}
+                            <TimeInHour time={elem.startTime} timeZone={user?.timeZone ?? 'Asia/Karachi'} />-<TimeInHour time={elem.endTime} timeZone={user?.timeZone ?? 'Asia/Karachi'} />
                         </div>
                     </div>
                 </div>
