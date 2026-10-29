@@ -1,7 +1,7 @@
 "use client"
 import { tryCatch } from "@/utils/tryCatch";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 import { addMemberApi, countTeamApi, getMemberApi, removeTeamMemberApi } from "@/services/Frontend/teamApi";
 import { userType } from "@/types/usertype";
 import { useAppSelector } from "@/hooks/reduxhooks";
@@ -74,6 +74,7 @@ const teamReportProvider = createContext<ReportType | null>(null)
 export default function TeamContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
+    const { user } = useAuth()
 
     const [teamMember, setTeamMember] = useState({
         totalMember: 0,
@@ -108,10 +109,10 @@ export default function TeamContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         countMember()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     async function getMember() {
        
@@ -133,12 +134,12 @@ export default function TeamContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getMember()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authReady, teamStartDate, teamEndDate])
+    }, [authReady, teamStartDate, teamEndDate, user?.role])
 
     async function inviteMember(userid: string) {
         const [res, error] = await tryCatch(addMemberApi(userid))

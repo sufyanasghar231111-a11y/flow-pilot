@@ -5,18 +5,19 @@ import TaskColumn from "./TaskColumn";
 import { useState } from "react";
 import { Task } from "@/app/generated/prisma/client";
 import TaskCard from "./TaskCard";
-import { Status, useTaskUi1 } from "@/contexts/taskContext/TaskContext";
+import { Status, TaskState, useTaskUi1 } from "@/contexts/taskContext/TaskContext";
 
 
 export default function KanbanBoard() {
 
-    const [activeId, setActiveId] = useState<Task | null>(null)
+    const [activeId, setActiveId] = useState<TaskState | null>(null)
     const { getTask, updateTaskByStatus, setGetTask } = useTask()
     const { setWarningModal } = useTaskUi1()
 
 
     function handleDragStart(event: DragStartEvent) {
         const activeTask = getTask.find((task) => task.id === event.active.id)
+        if (!activeTask) return
         setActiveId(activeTask)
     }
 
@@ -58,7 +59,6 @@ export default function KanbanBoard() {
             )
         )
 
-        
 
         updateTaskByStatus(taskId, status)
     }

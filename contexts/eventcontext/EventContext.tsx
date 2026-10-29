@@ -2,7 +2,7 @@
 import { countEventStats, createEventApi, getAllEvent, getSingleEventApi, removeEventApi, updateEventApi } from "@/services/Frontend/eventApi";
 import { tryCatch } from "@/utils/tryCatch";
 import React, { ReactNode, useContext, useEffect, useState, createContext } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 import { EventType } from "@/app/generated/prisma/enums";
 import { userType } from "@/types/usertype";
 import { EventTypeState } from "@/types/eventType";
@@ -102,6 +102,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
     const [eventData, setEventData] = useState<EventTypes[]>([])
     const [addMemberModal, setAddMemberModal] = useState<boolean>(false)
     const { authReady } = useLogin()
+    const { user } = useAuth()
     const [singleEventData, setSingleEventData] = useState<EventTypes | null>(null)
 
     const [event, setEvent] = useState<EventTypeState>(
@@ -157,10 +158,10 @@ export default function EventContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         EventCount()
-    }, [authReady])
+    }, [authReady, user?.role])
 
 
     async function getEvent() {
@@ -180,11 +181,11 @@ export default function EventContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getEvent()
-    }, [authReady, type, eventendDate, eventstartDate])
+    }, [authReady, type, eventendDate, eventstartDate, user?.role])
 
     async function getSingleEvent(eventid: string) {
         if (!eventid) return

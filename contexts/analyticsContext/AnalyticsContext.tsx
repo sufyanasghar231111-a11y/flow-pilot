@@ -3,7 +3,7 @@
 import { dailyProjectApi, dailyTaskApi, overDueApi, taskPriorityApi } from "@/services/Frontend/analyticsApi";
 import { tryCatch } from "@/utils/tryCatch";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 
 
 type AnalyticsProjectType = {
@@ -38,6 +38,7 @@ export const priorityProvider = createContext<PriorityType | null>(null)
 export default function AnalyticsContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
+    const { user } = useAuth()
 
     const [projectCreation, setProjectCreation] = useState({})
     const [projectCompletion, setProjectCompletion] = useState({})
@@ -67,11 +68,11 @@ export default function AnalyticsContext({ children }: { children: ReactNode }) 
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         dailyProject()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     async function dailyTask() {
         const [res, error] = await tryCatch(dailyTaskApi())
@@ -86,11 +87,11 @@ export default function AnalyticsContext({ children }: { children: ReactNode }) 
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         dailyTask()
-    }, [authReady])
+    }, [authReady, user?.role])
 
 
     async function overDue() {
@@ -104,10 +105,10 @@ export default function AnalyticsContext({ children }: { children: ReactNode }) 
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         overDue()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     async function taskPriority() {
         const [res, error] = await tryCatch(taskPriorityApi())
@@ -125,11 +126,11 @@ export default function AnalyticsContext({ children }: { children: ReactNode }) 
     }
 
     useEffect(()=>{
-        if(!authReady) return
+        if(!authReady || user?.role !=='ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         taskPriority()
-    },[authReady])
+    },[authReady, user?.role])
 
 
     return (

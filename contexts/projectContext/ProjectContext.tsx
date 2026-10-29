@@ -3,7 +3,7 @@
 import { deleteProjectApi, getProjectApi, projectCreationApi, singleProject, totalCount, updateProjectApi } from "@/services/Frontend/projectApi";
 import { tryCatch } from "@/utils/tryCatch";
 import React, { ReactNode, useEffect, useState, createContext, useContext, useMemo, useCallback } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 import { ProjectStatsType, ProjectStatType, ProjectValue, UpdatePropType } from "@/types/projectType";
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/hooks/reduxhooks";
@@ -82,6 +82,7 @@ export const reportProjectContext = createContext<ReportType | null>(null)
 export default function ProjectContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
+    const { user } = useAuth()
 
     const [projectStats, setProjectStats] = useState<ProjectStatsType>(
         {
@@ -180,11 +181,11 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllStatus()
 
-    }, [authReady])
+    }, [authReady, user?.role])
 
     const getAllProject = useCallback(async () => {
 
@@ -212,11 +213,11 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     }, [projectPage, status, startDate, endDate,])
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllProject()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authReady, projectPage, endDate, startDate, status])
+    }, [authReady, projectPage, endDate, startDate, status, user?.role])
 
     const ProjectCreation = useCallback(async (e: { preventDefault: () => void; }) => {
         e.preventDefault()
@@ -251,10 +252,10 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     }, [])
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getSingleProject()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     const handleUpdate = useCallback((e: { target: { name: string; value: string; }; }) => {
         setUpdate(

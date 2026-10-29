@@ -112,7 +112,7 @@ export class TeamService {
                             createdAt: 'desc'
                         }
                     }
-                ),   
+                ),
             ]
         )
 
@@ -184,12 +184,13 @@ export class TeamService {
         const newThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
         const [totalMember, newTotal] = await Promise.all([
-            prisma.teamMember.count(),
+            prisma.teamMember.count({ where: { adminId: admin.userId } }),
             prisma.teamMember.count({
                 where: {
                     createdAt: {
                         gte: newThisMonth
-                    }
+                    },
+                    adminId: admin.userId
                 }
             })
         ])

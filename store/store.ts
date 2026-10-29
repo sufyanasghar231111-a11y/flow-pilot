@@ -6,6 +6,7 @@ import { comparisonReducer, customTabReducer, filterEventReducer, filterReducer,
 import { allReadReducer, CustomTabReducer, deleteSingleReducer, MarkAsSingleReducer, notificationReducer, StatReducer } from "./slices/NotificationSlice";
 import { PfpReducer } from "./slices/PfpSlice";
 import { searchInputReducer, searchModalReducer, searchPageReducer, themeReducer } from "./slices/ThemeSlice";
+import { recentActivityReducer, singleTaskReducer, totalStatReducer, updateModalReducer, updateTaskReducer, userAllDataReducer } from "./slices/userSlice";
 
 export const store = configureStore({
     reducer: {
@@ -30,7 +31,13 @@ export const store = configureStore({
         themeReducer: themeReducer,
         searchInput: searchInputReducer,
         searchModal: searchModalReducer,
-        searchPage: searchPageReducer
+        searchPage: searchPageReducer,
+        totalStat: totalStatReducer,
+        allData: userAllDataReducer,
+        recentActivity: recentActivityReducer,
+        updateTaskData: updateTaskReducer,
+        updateModal: updateModalReducer,
+        singleTask: singleTaskReducer
     }
 })
 

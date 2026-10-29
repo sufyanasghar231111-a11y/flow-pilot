@@ -2,11 +2,11 @@ import { checkrole } from "@/libs/auth/role-checking";
 import { userService } from "@/services/Backend/user.service";
 import { NextRequest } from "next/server";
 
-export  async function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
     try {
         await checkrole(request, 'ADMIN')
 
-        const [totalUser, newThisMonth] = await userService.totalUser()
+        const [totalUser, newThisMonth] = await userService.totalUser(request)
 
         return Response.json(
             {

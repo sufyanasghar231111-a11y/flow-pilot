@@ -1,7 +1,7 @@
-import { useProject, useProjectStat } from "@/hooks/useProject";
+import { useProjectStat } from "@/hooks/useProject";
 import { useTask } from "@/hooks/useTask";
 import { useUser } from "@/hooks/useUser";
-import { RiCheckboxCircleFill, RiFolderFill, RiFolderOpenFill, RiTaskFill, RiTeamFill, RiTodoFill, RiTodoLine } from "@remixicon/react";
+import { RiCheckboxCircleFill, RiFolderFill, RiFolderOpenFill, RiTaskFill, RiTeamFill, RiTodoFill } from "@remixicon/react";
 
 export default function ProjectData() {
     const { projectStats } = useProjectStat()

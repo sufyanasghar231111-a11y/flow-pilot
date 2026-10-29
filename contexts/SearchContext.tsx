@@ -9,7 +9,7 @@ import { searchInputApi } from "@/services/Frontend/searchApi";
 import { UpdatePropType } from "@/types/projectType";
 import { SearchTeamMember } from "./teamContext/TeamContext";
 import { TaskState } from "./taskContext/TaskContext";
-import { useLogin } from "./authContext/AuthContext";
+import { useAuth, useLogin } from "./authContext/AuthContext";
 
 export type SearchData =
     | (UpdatePropType & { types: 'project', id: UpdatePropType['id'] })
@@ -32,11 +32,12 @@ export default function SearchContext({ children }: { children: ReactNode }) {
     const { searchPage } = useAppSelector((state) => state.searchPage)
     const debounce = useDebounce(searchInput, 600)
     const { authReady } = useLogin()
+    const { user } = useAuth()
     const [searchLoading, setSearchLoading] = useState(false)
 
     useEffect(() => {
 
-        if (!authReady) return
+        if (!authReady || user?.role !== 'ADMIN') return
 
         if (debounce.trim().toLowerCase().length < 2) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -80,7 +81,7 @@ export default function SearchContext({ children }: { children: ReactNode }) {
 
         searchData()
 
-    }, [debounce, searchPage, authReady])
+    }, [debounce, searchPage, authReady, user?.role])
 
 
     return (

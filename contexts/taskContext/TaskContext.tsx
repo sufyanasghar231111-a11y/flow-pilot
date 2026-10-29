@@ -2,7 +2,7 @@
 import { countApi, deleteTaskApi, getAllTaskApi, singleTaskApi, taskCreationApi, updateSingleTaskApi, updateTaskApi } from "@/services/Frontend/taskApi";
 import { tryCatch } from "@/utils/tryCatch";
 import React, { createContext, useState, ReactNode, useEffect, useContext, useRef, RefObject } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 import { useProject } from "@/hooks/useProject";
 import { useAppSelector } from "@/hooks/reduxhooks";
 import useDebounce from "@/hooks/useDebounce";
@@ -109,6 +109,8 @@ type TaskReport = {
     taskReport: ReportState;
     handlePdf: (data: string) => void;
     printRef: RefObject<HTMLDivElement | null>
+    updateUserTaskMore: string | null
+    setUpdateUserTaskMore: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 export const taskContext = createContext<TaskContextype | null>(null)
@@ -119,6 +121,7 @@ export const reportTaskProvider = createContext<TaskReport | null>(null)
 export default function TaskContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
+    const { user } = useAuth()
 
     const [taskStats, setTaskStats] = useState<TaskStatsType>({
         completedTask: 0,
@@ -154,6 +157,8 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     const [taskDeletionModal, setTaskDeletionModal] = useState<boolean>(false)
     const [singleTaskData, setSingleTaskData] = useState<TaskState | null>(null)
     const [taskUpdateModal, setTaskUpdateModal] = useState<boolean>(false)
+
+    const [updateUserTaskMore, setUpdateUserTaskMore] = useState<string | null>(null)
     const [taskReport, setTaskReport] = useState<ReportState>(
         {
             totalTask: 0,
@@ -195,10 +200,10 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !== 'ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         countTaskStats()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     function handleTaskChange(e: { target: { name: string; value: string; }; }) {
         setTask(
@@ -248,11 +253,11 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !== 'ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getAllTask()
 
-    }, [authReady, taskStatus, priority, startTaskDate, endTaskDate])
+    }, [authReady, taskStatus, priority, startTaskDate, endTaskDate, user?.role])
 
     async function taskCreation(projectId: string) {
         const [res, error] = await tryCatch(taskCreationApi(projectId,
@@ -301,10 +306,10 @@ export default function TaskContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !== 'ADMIN') return
 
         singleTaskById()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     async function deleteTask(taskid: string) {
         const [res, error] = await tryCatch(deleteTaskApi(taskid))
@@ -401,7 +406,7 @@ export default function TaskContext({ children }: { children: ReactNode }) {
         <taskContext.Provider value={{ taskStats, taskCreation, task, handleTaskChange, getTask, updateTaskByStatus, setGetTask, singleTaskData, singleTaskById, deleteTask, updateTask, taskUpdate, handleTaskUpdateChange, getAllTask, setSingleTaskData }}>
             <taskUiContext1.Provider value={{ projectSelectionModal, setProjectSelectionModal, taskCreationModal, setTaskCreationModal, warningModal, setWarningModal }}>
                 <taskUiContext2.Provider value={{ taskDetailModal, setTaskDetailModal, taskDeletionModal, setTaskDeletionModal, taskUpdateModal, setTaskUpdateModal }}>
-                    <reportTaskProvider.Provider value={{ taskReport, handlePdf, printRef }}>
+                    <reportTaskProvider.Provider value={{ taskReport, handlePdf, printRef, updateUserTaskMore, setUpdateUserTaskMore }}>
                         {children}
                     </reportTaskProvider.Provider>
                 </taskUiContext2.Provider>

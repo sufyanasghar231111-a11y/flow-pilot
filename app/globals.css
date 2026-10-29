@@ -42,3 +42,8 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #3b82f6;
 }
+
+.card {
+  border: 1px solid #252938;
+  background: #171A26;
+}

@@ -5,7 +5,7 @@ import { AllUser } from "@/services/Frontend/adminApi";
 import { addMemberToProjectApi, removeMemberToProjectApi } from "@/services/Frontend/projectApi";
 import { tryCatch } from "@/utils/tryCatch";
 import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
-import { useLogin } from "../authContext/AuthContext";
+import { useAuth, useLogin } from "../authContext/AuthContext";
 import { userType } from "@/types/usertype";
 import { useProjectUi1 } from "../projectContext/ProjectContext";
 
@@ -27,6 +27,7 @@ export default function MemberContext({ children }: { children: ReactNode }) {
     const { getAllProject } = useProject()
     const [allUser, setAllUser] = useState<userType[]>([])
     const { authReady } = useLogin()
+    const { user } = useAuth()
     const { setAddMemberModal } = useProjectUi1()
     const [userPage, setUserPage] = useState(1)
 
@@ -41,10 +42,10 @@ export default function MemberContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !== 'ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         GetAllUser()
-    }, [authReady, userPage])
+    }, [authReady, user?.role, userPage])
 
     async function AddMember(projectId: string, userId: string) {
         setAddMemberModal(false)

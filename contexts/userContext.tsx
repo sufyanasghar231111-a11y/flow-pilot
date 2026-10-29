@@ -3,7 +3,7 @@
 import { totalUserApi } from "@/services/Frontend/userApi";
 import { tryCatch } from "@/utils/tryCatch";
 import { createContext, ReactNode, useEffect, useState } from "react";
-import { useLogin } from "./authContext/AuthContext";
+import { useAuth, useLogin } from "./authContext/AuthContext";
 
 
 type UserStatsType = {
@@ -21,6 +21,7 @@ export const userProvider = createContext<UserType | null>(null)
 export default function UserContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
+    const { user } = useAuth()
 
     const [userStats, setUserStats] = useState<UserStatsType>(
         {
@@ -46,10 +47,10 @@ export default function UserContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady) return
+        if (!authReady || user?.role !=='ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         totalUser()
-    }, [authReady])
+    }, [authReady, user?.role])
 
     return (
         <userProvider.Provider value={{ userStats }}>
