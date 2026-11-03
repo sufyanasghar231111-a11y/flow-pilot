@@ -44,11 +44,6 @@ export default function ApplicationPreference() {
                         </div>
 
                     </div>
-
-
-                    <div className="">
-
-                    </div>
                 </div>
                 <div className="flex items-center gap-3 w-full">
                     <div className="w-[50%]">

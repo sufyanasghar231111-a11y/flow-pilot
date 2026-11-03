@@ -22,9 +22,13 @@ export const userAllDataApi = (pagination: number, toDoPagination: number, progr
     )
 }
 
-export const recentActivityApi = () => {
+export const recentActivityApi = (loadMoreData: number) => {
     return api.get('/user-all/recent-activity',
-
+        {
+            params: {
+                loaddata: loadMoreData
+            }
+        }
     )
 }
 
@@ -34,4 +38,17 @@ export const updateTaskApi = (taskid: string, status: string) => {
 
 export const singleTaskApi = (taskid: string) => {
     return api.get(`/user-all/single-task/${taskid}`)
+}
+
+export const getEventApi = () => {
+    return api.get('/user-all/get-event')
+}
+
+export const userSearchApi = (debounce: string, searchPage: number) => {
+    return api.get(`/user-all/user-search`, {
+        params: {
+            search: debounce,
+            page: searchPage
+        }
+    })
 }

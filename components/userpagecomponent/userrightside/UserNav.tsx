@@ -2,17 +2,31 @@
 import { Names } from "@/components/nameComponent/Names"
 import { useAuth } from "@/contexts/authContext/AuthContext"
 import { RiMessage2Line, RiNotification2Line, RiSearch2Line } from "@remixicon/react"
+import { useUserSearch } from "@/contexts/searchcontext/userSearchContext"
+import { useRouter } from "next/navigation"
 
 export default function UserNav() {
-
+    const { setOpenSearchModal, setSearchInput, searchInput } = useUserSearch()
     const { user } = useAuth()
+
+    const router = useRouter()
+
+    function handleSubmit(e: { preventDefault: () => void }) {
+        e.preventDefault()
+        const query = searchInput.trim()
+        if (!query) return
+        router.push(`/user/search?query=${query}`)
+        setSearchInput('')
+        setOpenSearchModal(false)
+    }
+
     return (
-        <div className="w-[81%] h-20 bg-[#0F111A] border-b fixed right-0  border-[#252938] z-298">
+        <div className="w-[81%] h-20 bg-[#0F111A] border-b fixed right-0  border-[#252938] z-[290]">
             <div className=" flex items-center justify-between w-full h-full px-6 ">
-                <form className="w-full" >
-                    <div className="w-[53%] border flex items-center gap-3 px-3  py-3 border-[#3b4157] rounded-md">
+                <form onSubmit={handleSubmit} className="w-full" >
+                    <div onClick={() => { setOpenSearchModal(true) }} className="w-[53%] border flex items-center gap-3 px-3  py-3 border-[#3b4157] rounded-md">
                         <RiSearch2Line className="text-[#A1A7B8] w-5 h-5" />
-                        <input type="text" placeholder="Search Anthing..." className="outline-0 text-[14px] w-full" />
+                        <input onChange={(elem) => { setSearchInput(elem.target.value) }} value={searchInput} type="text" placeholder="Search Anthing..." className="outline-0 text-[14px] w-full" />
                     </div>
                 </form>
                 <div className="flex items-center gap-6 ">

@@ -140,8 +140,6 @@ export default function ProjectContext({ children }: { children: ReactNode }) {
     })
 
     const { status, startDate, endDate } = useAppSelector((state) => state.filterData)
-    const { searchInput } = useAppSelector((state) => state.searchInput)
-    const { searchPage } = useAppSelector((state) => state.searchPage)
 
     const searchParams = useSearchParams()
     const projectPage = Number(searchParams.get('page')) || 1

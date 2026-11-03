@@ -7,7 +7,7 @@ import NotificationPagination from "./NotificationPagination"
 import NotificationMoreModal from "@/modals/NotificationMoreModal"
 import { useState } from "react"
 
-const notificationType = {
+export const notificationType = {
     EVENT_REMINDER: {
         style: 'bg-purple-500/10 text-purple-400',
         icon: RiCalendarEventFill

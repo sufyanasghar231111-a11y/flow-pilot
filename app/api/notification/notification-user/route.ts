@@ -7,12 +7,12 @@ export async function GET(request: NextRequest) {
     try {
         await checkrole(request, 'USER')
 
-        const getNotification = await NotificationService.getNotificationByUser(request)
+        const [getNotification, totalNotification, read, notRead, todayData, totalPercentage, totalReadPercentage, totalUnReadPercentage, totalTodayPercentage] = await NotificationService.getNotificationByUser(request)
 
         return Response.json(
             {
                 message: "Successful get notification",
-                getNotification
+                getNotification, totalNotification, read, notRead, todayData, totalPercentage, totalReadPercentage, totalUnReadPercentage, totalTodayPercentage
             },
             {
                 status: 200

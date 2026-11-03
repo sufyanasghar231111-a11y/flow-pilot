@@ -52,6 +52,43 @@ export class taskService {
                     dueDate,
                     assignedToId: teamMember.id,
                     createdById: createdBy.userId
+                },
+                select: {
+                    assignedTo: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true
+                                }
+                            }
+                        }
+                    },
+                    name: true,
+                    createdBy: {
+                        select: {
+                            id: true,
+                            username: true
+                        }
+                    },
+                    id: true,
+                    description: true,
+                    status: true
+                }
+            }
+        )
+
+        if (!createTask.assignedTo?.user.id) return
+
+        await prisma.notification.create(
+            {
+                data: {
+                    title: 'Task Assign',
+                    message: `Admin assign you a  task "${createTask.name}"`,
+                    type: 'TASK_ASSIGNED',
+                    userId: createTask.assignedTo?.user.id,
+                    adminId: createTask.createdBy.id,
+                    taskId: createTask.id
                 }
             }
         )
@@ -646,6 +683,21 @@ export class taskService {
                 where: {
                     id: taskid,
                     createdById: admin.userId
+                },
+                select: {
+                    assignedTo: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true
+                                }
+                            }
+                        }
+                    },
+                    name: true,
+                    description: true,
+                    status: true
                 }
             }
         )
@@ -686,10 +738,63 @@ export class taskService {
                     ...(priority !== undefined && { priority }),
                     ...(dueDate !== undefined && { dueDate }),
                     ...(assignedToId !== undefined && { assignedToId: teamMember.id }),
+                },
+                select: {
+                    assignedTo: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    username: true
+                                }
+                            }
+                        }
+                    },
+                    name: true,
+                    description: true,
+                    status: true,
+                    id: true
+
                 }
             }
         )
 
+        const change: string[] = []
+
+        if (find.name !== updateTask.name) {
+            change.push(`Task name change from "${find.name}" to "${updateTask.name}"`)
+        }
+
+        if (find.description !== updateTask.description) {
+            change.push(`Task description change from "${find.description}" to "${updateTask.description}"`)
+        }
+
+        if (find.status !== updateTask.status) {
+            change.push(`Task status change from "${find.status}" to "${updateTask.status}"`)
+        }
+
+        if (find.assignedTo?.user.username !== updateTask.assignedTo?.user.username) {
+            change.push(`Admin change assign task from "${find.assignedTo?.user.username}" to "${updateTask.assignedTo?.user.username}"`)
+        }
+
+        if (!updateTask.assignedTo?.user.id) {
+            throw new Error('User id is required')
+        }
+
+        if (change.length > 0) {
+            await prisma.notification.create(
+                {
+                    data: {
+                        title: 'Task Update',
+                        message: change.join(' '),
+                        type: 'TASK_UPDATED',
+                        userId: updateTask.assignedTo?.user.id,
+                        taskId: updateTask.id,
+                        adminId: admin.userId
+                    }
+                }
+            )
+        }
 
         if (updateTask.name || updateTask.description || updateTask.status) {
 

@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
     try {
-        await checkrole(request, 'ADMIN')
+        await checkrole(request, ['ADMIN', 'USER'])
 
         const signedUrl = await authService.ProfileImage(request)
 

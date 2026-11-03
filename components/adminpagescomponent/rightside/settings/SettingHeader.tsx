@@ -1,6 +1,6 @@
 import { RiSettings2Line } from "@remixicon/react";
 
-export default function SettingHeader() {
+export default function SettingHeader({ role }: { role: string }) {
     return (
         <div className="pt-24 px-4 ">
             <div className="flex items-center gap-3 px-1">
@@ -8,7 +8,7 @@ export default function SettingHeader() {
                     <RiSettings2Line className="text-white" size={20} />
                 </div>
                 <div>
-                    <h1 className="text-xl font-semibold">Admin Settings</h1>
+                    <h1 className="text-xl font-semibold">{role} Settings</h1>
                     <h1 className="text-xs text-gray-400">Manage Your account, system preferences, and application Settings</h1>
                 </div>
             </div>

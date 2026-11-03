@@ -1,4 +1,4 @@
-import { recentActivityApi, singleTaskApi, updateTaskApi } from "@/services/Frontend/userApi";
+import { getEventApi, recentActivityApi, singleTaskApi, updateTaskApi, userSearchApi } from "@/services/Frontend/userApi";
 import { totalStatApi, userAllDataApi } from "@/services/Frontend/userApi";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -20,9 +20,9 @@ export const totalUserData = createAsyncThunk(
 
 export const recentActivity = createAsyncThunk(
     '/user-all/recent-activity',
-    async () => {
-        const res = await recentActivityApi()
-        return res.data.recentActivity
+    async (loadMoreData: number) => {
+        const res = await recentActivityApi(loadMoreData)
+        return res.data
     }
 )
 

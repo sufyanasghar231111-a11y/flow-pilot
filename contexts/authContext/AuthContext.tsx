@@ -32,6 +32,7 @@ type AuthContextType = {
 
 type LogoutType = {
     handleLogout: () => void
+    profileImage: () => void
 }
 
 type RegisterStateType = {
@@ -106,6 +107,26 @@ export function AuthContext({ children }: { children: ReactNode }) {
         }))
     }
 
+    async function profileImage() {
+        const [res, error] = await tryCatch(profileImageApi())
+
+        if (error) {
+            console.log(error);
+            return
+        }
+
+        setUser(prev => {
+            if (!prev?.pfp) return prev
+
+            return {
+                ...prev,
+                pfp: res?.data.signedUrl
+            }
+        })
+
+    }
+
+
     const router = useRouter()
 
     async function handleSubmit(e: { preventDefault: () => void; }) {
@@ -154,6 +175,8 @@ export function AuthContext({ children }: { children: ReactNode }) {
             router.push('/dashboard')
         }
         setLoginLoading(false)
+
+        await profileImage()
     }
 
     const initailization = async () => {
@@ -249,24 +272,6 @@ export function AuthContext({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!user?.pfp) return
 
-        async function profileImage() {
-            const [res, error] = await tryCatch(profileImageApi())
-
-            if (error) {
-                console.log(error);
-                return
-            }
-
-            setUser(prev => {
-                if (!prev?.pfp) return prev
-
-                return {
-                    ...prev,
-                    pfp: res?.data.signedUrl
-                }
-            })
-
-        }
 
         const interval = setInterval(
             profileImage,
@@ -282,7 +287,7 @@ export function AuthContext({ children }: { children: ReactNode }) {
     return (
         <authProvider.Provider value={{ user, setUser }}>
             <loginProvider.Provider value={{ login, setLogin, handleChangeLogin, handleLogin, loginLoading, authReady }}>
-                <logoutProvider.Provider value={{ handleLogout }}>
+                <logoutProvider.Provider value={{ handleLogout, profileImage }}>
                     <registerProvider.Provider value={{ handleSubmit, register, setRegister, handleRegisterChange }}>
                         <updateProvider.Provider value={{ handleUpdate, setUpdateEmail, setUpdatePfp, setUpdateUsername, updateEmail, updatePfp, updateUsername, updatePreview, setUpdatePreview, pfpType, pfpSize, alreadyExist, setAlreadyExist, setPfpSize, setPfpType, removePfp, setRemovePfp }}>
                             {children}

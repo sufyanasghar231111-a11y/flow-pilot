@@ -40,6 +40,7 @@ export type UpdatePropType = {
     }[]
     tasks?: TaskState[];
     length?: number;
+    completedAt?:string
 }
 
 export type ProjectValue = {

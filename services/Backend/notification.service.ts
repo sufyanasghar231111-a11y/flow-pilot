@@ -7,97 +7,256 @@ export class NotificationService {
 
     static async getNotificationByUser(request: NextRequest) {
         const user = await getAuthUser(request)
+        const { searchParams } = new URL(request.url)
+        const limit = 8
+        const page = Number(searchParams.get('page')) || 1
+        const type = searchParams.get('type')
+        const startDate = searchParams.get('startDate')
+        const endDate = searchParams.get('endDate')
+        const skip = (page - 1) * limit
 
-        const [taskUpdate, projectUpdate, taskAssigned, taskOverdue, teamMember, projectMember, taskCompleted] = await Promise.all([
+        const now = new Date()
+        const day = now.getDay()
+        const diff = day === 0 ? 6 : day - 1
 
-            prisma.notification.findMany(
-                {
-                    where: {
-                        userId: user.userId,
-                        type: 'TASK_UPDATED'
-                    }
-                }
-            ),
+        const currentWeek = new Date(now)
+        currentWeek.setDate(now.getDate() - diff)
+        currentWeek.setHours(0, 0, 0, 0)
 
-            prisma.notification.findMany(
-                {
-                    where: {
-                        userId: user.userId,
-                        type: 'PROJECT_UPDATED'
-                    }
-                }
-            ),
+        const lastWeek = new Date(currentWeek)
+        lastWeek.setDate(currentWeek.getDate() - 7)
 
-            prisma.notification.findMany(
-                {
-                    where: {
-                        userId: user.userId,
-                        type: 'TASK_ASSIGNED'
-                    }
-                }
-            ),
+        const nextWeek = new Date(currentWeek)
+        nextWeek.setDate(currentWeek.getDate() + 7)
 
-            prisma.notification.findMany(
-                {
-                    where: {
-                        userId: user.userId,
-                        type: 'TASK_OVERDUE'
-                    }
-                }
-            ),
+        const today = new Date(now)
+        today.setHours(0, 0, 0, 0)
+
+        const yesterday = new Date(today)
+        yesterday.setDate(today.getDate() - 1)
+
+        const tomorrow = new Date(today)
+        tomorrow.setDate(today.getDate() + 1)
+
+
+        const [getNotification, totalNotification, read, notRead, todayData, totalVsLastWeek, totalVsNextWeek, readLastWeek, readNextWeek, notReadLastWeek, notReadNextWeek, yesterdayData, tomorrowData] = await Promise.all([
 
             prisma.notification.findMany(
                 {
                     where: {
                         userId: user.userId,
-                        type: 'TEAM_MEMBER_ADDED'
-                    }
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        ...(type && type !== 'All' ? {
+                            type: type as NotificationType
+                        } : {}),
+                        ...(startDate || endDate ?
+                            {
+                                createdAt: {
+                                    ...(startDate ? {
+                                        gte: new Date(startDate)
+                                    } : {}),
+                                    ...(endDate ? {
+                                        lt: new Date(
+                                            new Date(endDate).getTime() + 24 * 60 * 60 * 1000
+                                        )
+                                    } : {})
+                                }
+                            } : {}
+                        )
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    skip,
+                    take: limit
                 }
             ),
-            prisma.notification.findMany(
+
+            prisma.notification.count(
                 {
                     where: {
                         userId: user.userId,
-                        type: 'ADD_PROJECT_MEMBER'
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        }
                     }
                 }
             ),
-            prisma.notification.findMany(
+
+            prisma.notification.count(
                 {
                     where: {
                         userId: user.userId,
-                        type: 'TASK_COMPLETED'
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        isRead: true
                     }
                 }
             ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        isRead: false
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: today,
+                            lt: tomorrow
+                        }
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: lastWeek,
+                            lt: currentWeek
+                        }
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: currentWeek,
+                            lt: nextWeek
+                        }
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: lastWeek,
+                            lt: currentWeek
+                        },
+                        isRead: true
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: currentWeek,
+                            lt: nextWeek
+                        },
+                        isRead: true
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: lastWeek,
+                            lt: currentWeek
+                        },
+                        isRead: false
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: currentWeek,
+                            lt: nextWeek
+                        },
+                        isRead: false
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: yesterday,
+                            lt: today
+                        },
+                    }
+                }
+            ),
+
+            prisma.notification.count(
+                {
+                    where: {
+                        userId: user.userId,
+                        type: {
+                            in: ['TASK_UPDATED', 'PROJECT_UPDATED', 'TASK_ASSIGNED', 'TASK_OVERDUE', 'TEAM_MEMBER_ADDED', 'ADD_PROJECT_MEMBER']
+                        },
+                        createdAt: {
+                            gte: today,
+                            lt: tomorrow
+                        }
+                    }
+                }
+            ),
+
 
         ])
 
-        const getNotification = [
-            ...taskUpdate.map((elem) => ({
-                ...elem
-            })),
-            ...projectUpdate.map((elem) => ({
-                ...elem
-            })),
-            ...taskAssigned.map((elem) => ({
-                ...elem
-            })),
-            ...taskOverdue.map((elem) => ({
-                ...elem
-            })),
-            ...teamMember.map((elem) => ({
-                ...elem
-            })),
-            ...projectMember.map((elem) => ({
-                ...elem
-            })),
-            ...taskCompleted.map((elem) => ({
-                ...elem
-            })),
-        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        const totalPercentage = totalVsLastWeek === 0 ? totalVsNextWeek > 0 ? 100 : 0 : (((totalVsNextWeek - totalVsLastWeek) / totalVsLastWeek) * 100).toFixed(0)
+        const totalReadPercentage = readLastWeek === 0 ? readNextWeek > 0 ? 100 : 0 : (((readNextWeek - readLastWeek) / readLastWeek) * 100).toFixed(0)
+        const totalUnReadPercentage = notReadLastWeek === 0 ? notReadNextWeek > 0 ? 100 : 0 : (((notReadNextWeek - notReadLastWeek) / notReadLastWeek) * 100).toFixed(0)
+        const totalTodayPercentage = yesterdayData === 0 ? tomorrowData > 0 ? 100 : 0 : (((tomorrowData - yesterdayData) / yesterdayData) * 100).toFixed(0)
 
-        return getNotification
+        return [getNotification, totalNotification, read, notRead, todayData, totalPercentage, totalReadPercentage, totalUnReadPercentage, totalTodayPercentage]
     }
 
     static async getNotificationByAdmin(request: NextRequest) {
@@ -464,6 +623,5 @@ export class NotificationService {
 
         return singleDelete
     }
-
 
 }

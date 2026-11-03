@@ -40,7 +40,7 @@ export default function CalendarSheet() {
             <div className=" w-[76%] bg-[#171A26] border border-[#252938] rounded-xl px-3 py-3 shadow-lg shadow-black/20">
                 <MonthChange />
 
-                {/* Weekday header */}
+
                 <div className="grid grid-cols-7 overflow-hidden rounded-t-xl border border-[#252938] bg-[#0F111A]">
                     {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((elem, index) => (
                         <div
@@ -52,7 +52,6 @@ export default function CalendarSheet() {
                     ))}
                 </div>
 
-                {/* Days grid */}
                 <div className="grid grid-cols-7 overflow-hidden rounded-b-xl border-x border-b border-[#252938] bg-[#171A26]">
                     {days.map((day, index) => (
                         <div

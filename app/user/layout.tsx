@@ -1,5 +1,7 @@
 import UserLeftSide from "@/components/userpagecomponent/userleftside/UserLeftSide";
+import SearchComponent from "@/components/userpagecomponent/userrightside/searchcomponent/SearchComponent";
 import { checkPageRole } from "@/libs/auth/checkPageRole";
+import CalendarDataByDay from "@/modals/CalendarDataByDay";
 import UserUpdateStatus from "@/modals/UserUpdateStatus";
 import WarningModalForUser from "@/modals/WarningModalForUser";
 import { ReactNode } from "react";
@@ -10,6 +12,8 @@ export default async function UserLayout({ children }: { children: ReactNode }) 
         <div className=" relative w-full h-full">
             <UserUpdateStatus />
             <WarningModalForUser />
+            <CalendarDataByDay />
+            <SearchComponent />
 
             <div className="w-full h-screen flex  relative">
                 <div className="w-[19%] h-full">

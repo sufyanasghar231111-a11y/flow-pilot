@@ -23,3 +23,7 @@ export const updateAdminProfile = (data: FormData) => {
 export const profileImageApi = () => {
     return api.get('/auth/profile-image')
 }
+
+export const userProfileUpdate = (data: FormData)=>{
+    return api.patch('/auth/user-profile-update', data)
+}

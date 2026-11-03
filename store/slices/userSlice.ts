@@ -36,6 +36,12 @@ interface Recent {
     id: string
 }
 
+type RecentData = {
+    joinedInTeam: number,
+    newJoinedInTeam: number,
+    recentActivity: Recent[]
+}
+
 interface InitialState {
     totalStat: TotalStat,
     statLoading: boolean,
@@ -43,7 +49,7 @@ interface InitialState {
     allDetail: AllDetail | null,
     allDataLoading: boolean,
     allDataError: null | string,
-    recentActivity: Recent[],
+    recentActivity: RecentData | null,
     recentLoading: boolean,
     recentError: null | string,
     updateTaskLoading: boolean,
@@ -51,7 +57,8 @@ interface InitialState {
     updateModal: boolean,
     singleTaskData: TaskState | null;
     singleTaskLoading: boolean,
-    singleTaskError: string | null
+    singleTaskError: string | null;
+    activityCustomTab: string
 }
 
 const initialState: InitialState = {
@@ -73,7 +80,7 @@ const initialState: InitialState = {
     allDetail: null,
     allDataLoading: false,
     allDataError: null,
-    recentActivity: [],
+    recentActivity: null,
     recentLoading: false,
     recentError: null,
     updateTaskLoading: false,
@@ -81,7 +88,8 @@ const initialState: InitialState = {
     updateModal: false,
     singleTaskData: null,
     singleTaskLoading: false,
-    singleTaskError: null
+    singleTaskError: null,
+    activityCustomTab: ''
 }
 
 export const totalStat = createSlice({
@@ -237,7 +245,13 @@ export const recentActivitySlice = createSlice({
             })
             .addCase(recentActivity.fulfilled, (state, action) => {
                 state.recentLoading = false;
-                state.recentActivity = action.payload
+                const page = action.meta.arg
+                if (page === 1) {
+                    state.recentActivity = action.payload
+                }
+                else {
+                    state.recentActivity?.recentActivity.push(...action.payload.recentActivity)
+                }
             })
             .addCase(recentActivity.rejected, (state, action) => {
                 state.recentLoading = false;
@@ -299,11 +313,23 @@ export const singleTaskSlice = createSlice({
     }
 })
 
+export const activityCustomTab = createSlice({
+    name: "custom-tab",
+    initialState,
+    reducers: {
+        setActivityCustomTab: (state, action) => {
+            state.activityCustomTab = action.payload
+        }
+    }
+})
+
 export const { moveTask } = userAllData.actions
 export const { setUpdateModal } = updateModalSlice.actions
+export const { setActivityCustomTab } = activityCustomTab.actions
 export const totalStatReducer = totalStat.reducer
 export const userAllDataReducer = userAllData.reducer
 export const recentActivityReducer = recentActivitySlice.reducer
 export const updateTaskReducer = updateTaskSlice.reducer
 export const updateModalReducer = updateModalSlice.reducer
 export const singleTaskReducer = singleTaskSlice.reducer
+export const activityCustomTabReducer = activityCustomTab.reducer

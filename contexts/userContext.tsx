@@ -2,7 +2,7 @@
 
 import { totalUserApi } from "@/services/Frontend/userApi";
 import { tryCatch } from "@/utils/tryCatch";
-import { createContext, ReactNode, useEffect, useState } from "react";
+import React, { createContext, ReactNode, useEffect, useState } from "react";
 import { useAuth, useLogin } from "./authContext/AuthContext";
 
 
@@ -13,6 +13,8 @@ type UserStatsType = {
 
 type UserType = {
     userStats: UserStatsType
+    notificationModal: string | null
+    setNotificationModal: React.Dispatch<React.SetStateAction<string | null>>
 }
 
 
@@ -22,6 +24,7 @@ export default function UserContext({ children }: { children: ReactNode }) {
 
     const { authReady } = useLogin()
     const { user } = useAuth()
+    const [notificationModal, setNotificationModal] = useState<string | null>(null)
 
     const [userStats, setUserStats] = useState<UserStatsType>(
         {
@@ -43,17 +46,17 @@ export default function UserContext({ children }: { children: ReactNode }) {
             newThisMonth: res?.data.newThisMonth
         })
 
-        
+
     }
 
     useEffect(() => {
-        if (!authReady || user?.role !=='ADMIN') return
+        if (!authReady || user?.role !== 'ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         totalUser()
     }, [authReady, user?.role])
 
     return (
-        <userProvider.Provider value={{ userStats }}>
+        <userProvider.Provider value={{ userStats, notificationModal, setNotificationModal }}>
             {children}
         </userProvider.Provider>
     )

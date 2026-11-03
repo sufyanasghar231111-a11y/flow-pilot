@@ -158,7 +158,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady || user?.role !=='ADMIN') return
+        if (!authReady || user?.role !== 'ADMIN') return
         // eslint-disable-next-line react-hooks/set-state-in-effect
         EventCount()
     }, [authReady, user?.role])
@@ -181,7 +181,7 @@ export default function EventContext({ children }: { children: ReactNode }) {
     }
 
     useEffect(() => {
-        if (!authReady || user?.role !=='ADMIN') return
+        if (!authReady || user?.role !== 'ADMIN') return
 
         // eslint-disable-next-line react-hooks/set-state-in-effect
         getEvent()

@@ -19,26 +19,40 @@ export class TeamService {
             throw new Error('admin is not found')
         }
 
-        const findMember = await prisma.teamMember.findFirst(
-            {
-                where: {
-                    userId: userid
-                }
-            }
-        )
-
-        if (findMember) {
-            throw new Error("Member is already exist")
-        }
-
         const addMember = await prisma.teamMember.create(
             {
                 data: {
                     userId: userid,
                     adminId: admin.userId
+                },
+                select: {
+                    byAdmin: {
+                        select: {
+                            username: true
+                        }
+                    },
+                    user: {
+                        select: {
+                            username: true
+                        }
+                    }
+
                 }
             }
         )
+
+        await prisma.notification.create(
+            {
+                data: {
+                    title: 'Team Member',
+                    type: 'TEAM_MEMBER_ADDED',
+                    message: `"${addMember.byAdmin.username}" add you as a team member `,
+                    userId: addMember.user.username,
+                    adminId: addMember.byAdmin.username
+                }
+            }
+        )
+
         return addMember
     }
 

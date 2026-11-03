@@ -12,6 +12,8 @@ import AnalyticsContext from "@/contexts/analyticsContext/AnalyticsContext";
 import StoreProvider from "@/store/StoreProvider";
 import SettingContext from "@/contexts/setting/SettingContext";
 import SearchContext from "@/contexts/SearchContext";
+import UserMemberContext from "@/contexts/userMemberContext/UserMemberContext";
+import UserSearchContext from "@/contexts/searchcontext/userSearchContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,9 +48,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                         <AnalyticsContext>
                           <SettingContext>
                             <SearchContext>
-                              <div>
-                                {children}
-                              </div>
+                              <UserMemberContext>
+                                <UserSearchContext >
+                                  <div>
+                                    {children}
+                                  </div>
+                                </UserSearchContext>
+                              </UserMemberContext>
                             </SearchContext>
                           </SettingContext>
                         </AnalyticsContext>

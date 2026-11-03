@@ -1,4 +1,5 @@
 import { TaskStatus } from "@/app/generated/prisma/enums";
+import { generateEmbedding } from "@/libs/ai/embedding";
 import { getAuthUser } from "@/libs/auth/auth";
 import prisma from "@/libs/db";
 import { AppError } from "@/utils/AppError";
@@ -182,8 +183,20 @@ export class UserAllService {
 
     static async recentActivity(request: NextRequest) {
         const user = await getAuthUser(request)
+        const { searchParams } = new URL(request.url)
+        const loadData = Number(searchParams.get('loaddata')) || 1
+        const limit = 3
 
-        const [project, task, joined] = await Promise.all([
+        const skip = (loadData - 1) * limit
+
+        const now = new Date()
+        const newThisMonth = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+        )
+
+        const [project, task, joined, joinedInTeam, newJoinedInTeam] = await Promise.all([
             prisma.projectMember.findMany(
                 {
                     where: {
@@ -202,7 +215,9 @@ export class UserAllService {
                             }
                         },
                         id: true
-                    }
+                    },
+                    take: limit,
+                    skip
                 }
             ),
 
@@ -221,6 +236,9 @@ export class UserAllService {
                         completedAt: true,
                         id: true
                     }
+                    ,
+                    take: limit,
+                    skip
                 }
             ),
 
@@ -239,9 +257,59 @@ export class UserAllService {
                             }
                         },
                         id: true
+                    },
+                    take: limit,
+                    skip
+                }
+            ),
+
+            prisma.teamMember.count(
+                {
+                    where: {
+                        user: {
+                            id: user.userId,
+                        },
                     }
                 }
-            )
+            ),
+
+            prisma.teamMember.count(
+                {
+                    where: {
+                        user: {
+                            id: user.userId,
+                        },
+                        createdAt: {
+                            gte: newThisMonth
+                        }
+                    }
+                }
+            ),
+
+            // prisma.projectMember.count(
+            //     {
+            //         where: {
+            //             user: {
+            //                 user: {
+            //                     id: user.userId
+            //                 }
+            //             },
+            //         }
+            //     }
+            // ),
+
+            // prisma.task.count(
+            //     {
+            //         where: {
+            //             assignedTo: {
+            //                 user: {
+            //                     id: user.userId
+            //                 }
+            //             }
+            //         }
+            //     }
+            // ),
+
         ])
 
         const totalActivity = [
@@ -273,7 +341,7 @@ export class UserAllService {
             })))
         ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-        return totalActivity
+        return [totalActivity, joinedInTeam, newJoinedInTeam]
     }
 
     static async updateStatus(request: NextRequest, taskid: string, status: TaskStatus) {
@@ -303,6 +371,45 @@ export class UserAllService {
             }
         )
 
+        if (updatTaskByDrag.status || updatTaskByDrag.name || updatTaskByDrag.description) {
+
+            const content = `
+            Task: ${updatTaskByDrag.name}
+            Description: ${updatTaskByDrag.description}
+            Status: ${updatTaskByDrag.status}
+            `
+
+            const embedding = await generateEmbedding(content)
+
+            await prisma.$executeRaw`
+            INSERT INTO "SearchEmbedding" (
+            "id",
+            "taskId",
+            "content",
+            "embedding",
+            "embeddingModel",
+            "createdAt",
+            "updatedAt"
+            )
+            VALUES(
+            ${crypto.randomUUID()},
+            ${updatTaskByDrag.id},
+            ${content},
+            ${JSON.stringify(embedding)}::vector,
+            'gemini-embedding-2',
+            NOW(),
+            NOW()
+            )
+
+            ON CONFLICT ("taskId")
+            DO UPDATE SET
+            "content" = EXCLUDED."content",
+            "embedding"= EXCLUDED."embedding",
+            "embeddingModel"= EXCLUDED."embeddingModel",
+            "updatedAt" = NOW()
+            `
+        }
+
         return updatTaskByDrag
     }
 
@@ -323,6 +430,176 @@ export class UserAllService {
         )
 
         return singleTask
+    }
+
+    static async eventMember(request: NextRequest) {
+        const user = await getAuthUser(request)
+
+        const now = new Date()
+        const startOfMonth = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+        )
+
+        const [totalEvent, totalProjectMeeting, totalPersonalMeeting, totalDeadline, newDeadline, newProjectMeeting, newPersonalMeeting, getEvent] = await Promise.all([
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'PROJECT_MEETING'
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'PERSONAL_MEETING'
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'DEADLINE'
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'DEADLINE'
+                        },
+                        createdAt: {
+                            gte: startOfMonth
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'PROJECT_MEETING'
+                        },
+                        createdAt: {
+                            gte: startOfMonth
+                        }
+                    }
+                }
+            ),
+
+            prisma.eventMember.count(
+                {
+                    where: {
+                        member: {
+                            user: {
+                                id: user.userId
+                            }
+                        },
+                        event: {
+                            type: 'PERSONAL_MEETING'
+                        },
+                        createdAt: {
+                            gte: startOfMonth
+                        }
+                    }
+                }
+            ),
+
+            prisma.event.findMany(
+                {
+                    where: {
+                        eventMember: {
+                            some: {
+                                member: {
+                                    user: {
+                                        id: user.userId
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    select: {
+                        id: true,
+                        name: true,
+                        date: true,
+                        startTime: true,
+                        endTime: true,
+                        createdAt: true,
+                        type: true,
+                        eventMember: {
+                            select: {
+                                member: {
+                                    select: {
+                                        user: {
+                                            select: {
+                                                email: true,
+                                                id: true,
+                                                username: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+
+        ])
+
+        return [
+            totalEvent, totalProjectMeeting, totalPersonalMeeting, totalDeadline, newDeadline, newProjectMeeting, newPersonalMeeting, getEvent
+        ]
     }
 
 }

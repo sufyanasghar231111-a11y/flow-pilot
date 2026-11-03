@@ -6,7 +6,7 @@ export default function Settings() {
     return (
         <div className="w-full h-full">
             <AdminNav />
-            <SettingHeader />
+            <SettingHeader role='Admin' />
             <SettingDetail />
         </div>
     )

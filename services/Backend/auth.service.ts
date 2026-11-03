@@ -229,6 +229,83 @@ export const authService = {
 
         return signedUrl
 
+    },
+
+    async updateUserProfile(request: NextRequest, username?: string, email?: string, pfp?: File, removePfp?: boolean) {
+        const user = await getAuthUser(request)
+
+        let pathFile: string | undefined
+
+        if (removePfp && !(pfp instanceof File)) {
+            await prisma.user.update(
+                {
+                    where: {
+                        id: user.userId,
+                    },
+                    data: {
+                        pfp: ''
+                    }
+                }
+            )
+        }
+        else if (pfp && pfp.size > 0) {
+            const types: Record<string, string> = {
+                "image/jpeg": "jpg",
+                "image/png": "png",
+                "image/webp": "webp",
+            }
+
+            const extension = types[pfp.type]
+
+            if (!extension) {
+                throw new AppError('Only jpeg, png, and webp allowed', 404)
+            }
+
+            if (pfp.size > 2 * 1024 * 1024) {
+                throw new AppError('Image Must be less than 2 Mb', 400)
+            }
+
+            const buffer = Buffer.from(await pfp.arrayBuffer())
+
+            pathFile = await ProfileUpdate(
+                buffer,
+                pfp.type,
+                user.userId,
+                extension
+            )
+
+        }
+
+        const find = await prisma.user.findFirst(
+            {
+                where: {
+                    id: {
+                        not: user.userId
+                    },
+                    email: email
+                }
+            }
+        )
+
+        if (find) {
+            throw new AppError('Email is already exist', 409)
+        }
+
+        const updateProfile = await prisma.user.update(
+            {
+                where: {
+                    id: user.userId
+                },
+                data: {
+                    ...(username !== undefined && { username }),
+                    ...(email !== undefined && { email }),
+                    ...(pfp !== undefined && { pfp: pathFile }),
+
+                }
+            }
+        )
+
+        return updateProfile
     }
 
 }

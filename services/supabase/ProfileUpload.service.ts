@@ -18,7 +18,7 @@ export const ProfileUpdate = async (
         });
 
     if (error) {
-        throw new Error(error.message)
+        throw new Error(`Pfp:${error.message}`);
     }
 
     return data.path

@@ -7,12 +7,12 @@ export async function GET(request: NextRequest) {
     try {
         await checkrole(request, 'USER')
 
-        const recentActivity = await UserAllService.recentActivity(request)
+        const [recentActivity, joinedInTeam, newJoinedInTeam] = await UserAllService.recentActivity(request)
 
         return Response.json(
             {
                 message: "Successful get",
-                recentActivity
+                recentActivity, joinedInTeam, newJoinedInTeam
             },
             {
                 status: 200

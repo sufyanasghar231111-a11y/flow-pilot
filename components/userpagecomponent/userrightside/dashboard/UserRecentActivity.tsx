@@ -4,10 +4,33 @@ import { useAuth, useLogin } from "@/contexts/authContext/AuthContext";
 import { useAppDispatch, useAppSelector } from "@/hooks/reduxhooks"
 import { recentActivity } from "@/store/thunks/userThunk";
 import { TimeInHour } from "@/utils/TimeAgo";
-import { RiCheckLine, RiFolder2Fill, RiFolder2Line, RiPulseLine, RiTaskLine, RiTimeLine, RiUserAddLine } from "@remixicon/react";
+import { RiCheckLine, RiFolder2Fill, RiPulseLine, RiTaskLine, RiTimeLine, RiUserAddLine } from "@remixicon/react";
 import { useEffect } from "react"
 
-const data = recentActivity()
+const data = recentActivity(1)
+
+export const activityStyles = {
+    teamMember: {
+        icon: RiUserAddLine,
+        style: 'bg-blue-500/10 text-blue-400',
+        message: `added you to a team`,
+    },
+    project: {
+        icon: RiFolder2Fill,
+        style: 'bg-indigo-500/10 text-indigo-400',
+        message: `added you to a project`,
+    },
+    taskCompleted: {
+        icon: RiCheckLine,
+        style: 'bg-emerald-500/10 text-emerald-400',
+        message: `You completed a task`,
+    },
+    taskCreated: {
+        icon: RiTaskLine,
+        style: 'bg-amber-500/10 text-amber-400',
+        message: `assigned you a task`,
+    },
+}
 
 export default function UserRecentActivity() {
     const { recentActivity } = useAppSelector((state) => state.recentActivity)
@@ -35,29 +58,8 @@ export default function UserRecentActivity() {
             </div>
 
             <div className="mt-3 flex flex-col">
-                {recentActivity.slice(0, 5).map((elem) => {
-                    const activityStyles = {
-                        teamMember: {
-                            icon: RiUserAddLine,
-                            style: 'bg-blue-500/10 text-blue-400',
-                            message: `added you to a team`,
-                        },
-                        project: {
-                            icon: RiFolder2Fill,
-                            style: 'bg-indigo-500/10 text-indigo-400',
-                            message: `added you to a project`,
-                        },
-                        taskCompleted: {
-                            icon: RiCheckLine,
-                            style: 'bg-emerald-500/10 text-emerald-400',
-                            message: `You completed a task`,
-                        },
-                        taskCreated: {
-                            icon: RiTaskLine,
-                            style: 'bg-amber-500/10 text-amber-400',
-                            message: `assigned you a task`,
-                        },
-                    }
+                {recentActivity?.recentActivity.slice(0, 5).map((elem) => {
+
 
                     const activity = activityStyles[elem.types as keyof typeof activityStyles]
 
